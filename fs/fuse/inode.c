@@ -390,7 +390,7 @@ void fuse_unlock_inode(struct inode *inode, bool locked)
 
 static void fuse_umount_begin(struct super_block *sb)
 {
-	fuse_abort_conn(get_fuse_conn_super(sb));
+	fuse_abort_conn(get_fuse_conn_super(sb), false);
 }
 
 static void fuse_send_destroy(struct fuse_conn *fc)
@@ -945,6 +945,8 @@ static void process_init_reply(struct fuse_conn *fc, struct fuse_req *req)
 				fc->posix_acl = 1;
 				fc->sb->s_xattr = fuse_acl_xattr_handlers;
 			}
+			if (arg->flags & FUSE_ABORT_ERROR)
+				fc->abort_err = 1;
 		} else {
 			ra_pages = fc->max_read / PAGE_SIZE;
 			fc->no_lock = 1;
@@ -979,8 +981,8 @@ static void fuse_send_init(struct fuse_conn *fc, struct fuse_req *req)
 //shubin@BSP.Kernel.FS 2020/08/20 improving fuse storage performance
 		FUSE_SHORTCIRCUIT |
 #endif /* VENDOR_EDIT */
-		FUSE_PARALLEL_DIROPS | FUSE_HANDLE_KILLPRIV | FUSE_POSIX_ACL;
-
+		FUSE_PARALLEL_DIROPS | FUSE_HANDLE_KILLPRIV | FUSE_POSIX_ACL |
+		FUSE_ABORT_ERROR;
 	req->in.h.opcode = FUSE_INIT;
 	req->in.numargs = 1;
 	req->in.args[0].size = sizeof(*arg);
@@ -1238,7 +1240,7 @@ static void fuse_sb_destroy(struct super_block *sb)
 #endif
 		fuse_send_destroy(fc);
 
-		fuse_abort_conn(fc);
+		fuse_abort_conn(fc, false);
 		fuse_wait_aborted(fc);
 
 		down_write(&fc->killsb);
