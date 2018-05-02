@@ -22,6 +22,8 @@ ccflags-y := -fno-stack-protector
 ccflags-y += -DDISABLE_BRANCH_PROFILING -ffixed-x18
 ccflags-y += $(call cc-option, -fno-whole-program)
 
+CFLAGS_REMOVE_vgettimeofday.o += $(CC_FLAGS_SCS)
+
 # Force -O2 to avoid libgcc dependencies
 CFLAGS_REMOVE_vgettimeofday.o = -pg -Os
 CFLAGS_vgettimeofday.o = -fPIC
