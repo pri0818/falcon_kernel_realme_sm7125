@@ -2296,7 +2296,7 @@ static int elf_core_dump(struct coredump_params *cprm)
 		vma_filesz = vmalloc((segs - 1) * sizeof(*vma_filesz));
 	}
 #else
-	vma_filesz = vmalloc((segs - 1) * sizeof(*vma_filesz));
+	vma_filesz = vmalloc(array_size(sizeof(*vma_filesz), (segs - 1)));
 #endif /* OPLUS_BUG_STABILITY */
 
 	if (!vma_filesz)
