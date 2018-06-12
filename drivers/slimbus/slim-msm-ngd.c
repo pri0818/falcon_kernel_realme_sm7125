@@ -1867,7 +1867,7 @@ static int ngd_slim_probe(struct platform_device *pdev)
 		dev->lpass_phy_base = (unsigned long long)lpass_mem->start;
 	}
 
-	dev->wr_comp = kzalloc(sizeof(struct completion *) * MSM_TX_BUFS,
+	dev->wr_comp = kcalloc(MSM_TX_BUFS, sizeof(struct completion *),
 				GFP_KERNEL);
 	if (!dev->wr_comp) {
 		ret = -ENOMEM;
