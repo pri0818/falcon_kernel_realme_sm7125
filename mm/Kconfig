@@ -861,6 +861,10 @@ config OPLUS_MM_HACKS
 
 	  If unsure, say "n".
 
+config VMSTAT_INTERVAL
+	int "Default interval in seconds to update vmstat"
+	default 1	 
+
 # multi-gen LRU {
 config LRU_GEN
 	bool "Multi-Gen LRU"
