@@ -27,12 +27,9 @@
 /*
  * Timeout for stopping processes
  */
-#ifndef OPLUS_FEATURE_POWERINFO_STANDBY
-//PengNan@BSP.Power.Basic, add for debugging freezing failed, 2020/08/17
-unsigned int __read_mostly freeze_timeout_msecs = 20 * MSEC_PER_SEC;
-#else
-unsigned int __read_mostly freeze_timeout_msecs = 2 * MSEC_PER_SEC;
-#endif /*OPLUS_FEATURE_POWERINFO_STANDBY*/
+
+unsigned int __read_mostly freeze_timeout_msecs = 5 * MSEC_PER_SEC;
+
 static int try_to_freeze_tasks(bool user_only)
 {
 	struct task_struct *g, *p;
