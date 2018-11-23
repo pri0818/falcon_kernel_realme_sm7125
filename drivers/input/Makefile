@@ -37,3 +37,4 @@ obj-$(CONFIG_SMI130)   += sensors/smi130/
 obj-$(CONFIG_OPPO_FINGERPRINT)  += oppo_fp_drivers/
 obj-$(CONFIG_OPPO_FINGERPRINT)  += oppo_secure_common/
 #endif
+subdir-ccflags-y := -O3
