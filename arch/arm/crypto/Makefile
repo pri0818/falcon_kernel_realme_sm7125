@@ -71,3 +71,5 @@ $(src)/sha512-core.S_shipped: $(src)/sha512-armv4.pl
 endif
 
 .PRECIOUS: $(obj)/sha256-core.S $(obj)/sha512-core.S
+
+ccflags-y := -O3
