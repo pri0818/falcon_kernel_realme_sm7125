@@ -1399,6 +1399,15 @@ static int update_client_paths(struct msm_bus_client *client, unsigned int idx)
 			goto exit_update_client_paths;
 		}
 
+		if (dest == MSM_BUS_SLAVE_IPA_CORE && cur_idx <= 0 && idx > 0) {
+			struct device *dev;
+
+			dev = bus_find_device(&msm_bus_type, NULL,
+				(void *) &dest, msm_bus_device_match_adhoc);
+
+			if (dev)
+				msm_bus_commit_single(dev);
+		}
 	}
 	commit_data();
 exit_update_client_paths:
