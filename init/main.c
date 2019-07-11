@@ -541,6 +541,7 @@ static void __init mm_init(void)
 	pti_init();
 }
 
+void __init init_dma_buf_kmem_pool(void);
 asmlinkage __visible void __init start_kernel(void)
 {
 	char *command_line;
@@ -740,6 +741,7 @@ asmlinkage __visible void __init start_kernel(void)
 	cgroup_init();
 	taskstats_init_early();
 	delayacct_init();
+	init_dma_buf_kmem_pool();
 
 //#ifdef OPLUS_FEATURE_PHOENIX
 	// Kun.Hu@PSW.TECH.RELIABILTY, 2018/11/15, add for project phoenix(hang oppo)
