@@ -526,46 +526,15 @@ static struct ctl_table kern_table[] = {
 		.mode		= 0644,
 		.proc_handler	= sched_updown_migrate_handler,
 	},
-#if defined(OPLUS_FEATURE_FG_IO_OPT) && defined(CONFIG_OPPO_FG_IO_OPT)
-/*Huacai.Zhou@Tech.Kernel.MM, 2020-03-23,add foreground io opt*/
 	{
-		.procname	= "fg_io_opt",
-		.data		= &sysctl_fg_io_opt,
-		.maxlen		= sizeof(int),
-		.mode		= 0644,
-		.proc_handler	= proc_dointvec,
+		.procname       = "sched_energy_aware",
+		.data           = &sysctl_sched_energy_aware,
+		.maxlen         = sizeof(unsigned int),
+		.mode           = 0644,
+		.proc_handler   = proc_dointvec_minmax,
+		.extra1         = &zero,
+		.extra2         = &one,
 	},
-#endif /*OPLUS_FEATURE_FG_IO_OPT*/
-#ifdef OPLUS_FEATURE_EDTASK_IMPROVE
-/* Chuck.Huang@Power.basic, 2020-09-03, Add for improving ed task migration */
-	{
-		.procname   = "ed_task_enabled",
-		.data       = &sysctl_ed_task_enabled,
-		.maxlen     = sizeof(int),
-		.mode       = 0666,
-		.proc_handler = proc_dointvec,
-	},
-#endif
-#ifdef CONFIG_OPLUS_FEATURE_PANIC_FLUSH
-/*jason.tang@TECH.BSP.Kernel.Storage, 2019-05-20, add control ext4 fsync*/
-{
-		.procname	= "ext4_fsync_enable",
-		.data		= &sysctl_ext4_fsync_enable,
-		.maxlen		= sizeof(unsigned int),
-		.mode		= 0666,
-		.proc_handler	= proc_dointvec,
-},
-#endif
-#ifdef CONFIG_OPLUS_FEATURE_PANIC_FLUSH
-/*jason.tang@TECH.BSP.Kernel.Storage, 2019-05-20, add to count flush*/
-{
-		.procname	= "blkdev_issue_flush_count",
-		.data		= &sysctl_blkdev_issue_flush_count,
-		.maxlen		= sizeof(unsigned long),
-		.mode		= 0644,
-		.proc_handler	= proc_dointvec,
-},
-#endif
 #ifdef CONFIG_SCHED_DEBUG
 	{
 		.procname	= "sched_min_granularity_ns",
