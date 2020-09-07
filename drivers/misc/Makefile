@@ -76,10 +76,12 @@ obj-$(CONFIG_TEST_IRQ_REQUESTER) += irq_requester.o
 obj-$(CONFIG_OPLUS_RF_CABLE_MONITOR)	+= oplus_rf_cable_monitor.o
 #endif
 
-#ifdef OPLUS_FEATURE_CHG_BASIC
-obj-y               += motor.o
-obj-y               += oppo_motor/
-#endif
+obj-$(CONFIG_UID_SYS_STATS)	+= uid_sys_stats.o
+obj-$(CONFIG_MEMORY_STATE_TIME)	+= memory_state_time.o
+obj-$(CONFIG_QCOM_XR_SMRTVWR_MISC) += qcom-xr-smrtvwr-misc.o
+obj-$(CONFIG_TUSB1064_XR_MISC) += tusb1064.o
+obj-$(CONFIG_VXR200_XR_MISC) += vxr7200.o
+obj-$(CONFIG_BATTERY_SAVER)	+= battery_saver.o
 
 #ifdef OPLUS_FEATURE_TP_BASIC
 #Qicai.Gu@BSP.TP, 2020/08/10, modify for sim detect
