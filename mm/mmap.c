@@ -623,6 +623,23 @@ static int find_vma_links(struct mm_struct *mm, unsigned long addr,
 	return 0;
 }
 
+/*
+ * vma_next() - Get the next VMA.
+ * @mm: The mm_struct.
+ * @vma: The current vma.
+ *
+ * If @vma is NULL, return the first vma in the mm.
+ *
+ * Returns: The next VMA after @vma.
+ */
+static inline struct vm_area_struct *vma_next(struct mm_struct *mm,
+					 struct vm_area_struct *vma)
+{
+	if (!vma)
+		return mm->mmap;
+
+	return vma->vm_next;
+}
 static unsigned long count_vma_pages_range(struct mm_struct *mm,
 		unsigned long addr, unsigned long end)
 {
@@ -1285,19 +1302,7 @@ struct vm_area_struct *__vma_merge(struct mm_struct *mm,
 	if (vm_flags & VM_SPECIAL)
 		return NULL;
 
-	if (prev)
-		next = prev->vm_next;
-#if defined(OPLUS_FEATURE_VIRTUAL_RESERVE_MEMORY) && defined(CONFIG_VIRTUAL_RESERVE_MEMORY)
-	else {
-		if (BACKUP_ALLOC_FLAG(vm_flags))
-			next = mm->reserve_mmap;
-		else
-			next = mm->mmap;
-	}
-#else
-	else
-		next = mm->mmap;
-#endif
+	next = vma_next(mm, prev);
 	area = next;
 	if (area && area->vm_end == end)		/* cases 6, 7, 8 */
 		next = next->vm_next;
@@ -2870,13 +2875,7 @@ static void unmap_region(struct mm_struct *mm,
 		struct vm_area_struct *vma, struct vm_area_struct *prev,
 		unsigned long start, unsigned long end)
 {
-#if defined(OPLUS_FEATURE_VIRTUAL_RESERVE_MEMORY) && defined(CONFIG_VIRTUAL_RESERVE_MEMORY)
-	struct vm_area_struct *next = prev ? prev->vm_next : mm->mmap;
-	unsigned long free_flooring_addr = FIRST_USER_ADDRESS;
-	unsigned long free_ceiling_addr = USER_PGTABLES_CEILING;
-#else
-	struct vm_area_struct *next = prev ? prev->vm_next : mm->mmap;
-#endif
+	struct vm_area_struct *next = vma_next(mm, prev);
 	struct mmu_gather tlb;
 	struct vm_area_struct *cur_vma;
 
@@ -3141,14 +3140,7 @@ int __do_munmap(struct mm_struct *mm, unsigned long start, size_t len,
 		if (error)
 			return error;
 	}
-#if defined(OPLUS_FEATURE_VIRTUAL_RESERVE_MEMORY) && defined(CONFIG_VIRTUAL_RESERVE_MEMORY)
-	if (backed_addr_unmap)
-		vma = prev ? prev->vm_next : mm->reserve_mmap;
-	else
-		vma = prev ? prev->vm_next : mm->mmap;
-#else
-	vma = prev ? prev->vm_next : mm->mmap;
-#endif
+	vma = vma_next(mm, prev);
 
 	if (unlikely(uf)) {
 		/*
