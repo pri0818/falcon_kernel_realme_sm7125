@@ -179,7 +179,7 @@ int fuse_do_open(struct fuse_conn *fc, u64 nodeid, struct file *file,
 		if (!err) {
 			ff->fh = outarg.fh;
 			ff->open_flags = outarg.open_flags;
-
+			fuse_passthrough_setup(fc, ff, &outarg);
 		} else if (err != -ENOSYS || isdir) {
 			fuse_file_free(ff);
 			return err;
@@ -308,6 +308,8 @@ void fuse_release_common(struct file *file, bool isdir)
 //shubin@BSP.Kernel.FS 2020/08/20 improving fuse storage performance
 	fuse_shortcircuit_release(ff);
 #endif /* VENDOR_EDIT */
+	fuse_passthrough_release(&ff->passthrough);
+
 	fuse_prepare_release(ff, file->f_flags, opcode);
 
 	if (ff->flock) {
