@@ -979,11 +979,8 @@ static ssize_t fuse_file_read_iter(struct kiocb *iocb, struct iov_iter *to)
 {
 	struct inode *inode = iocb->ki_filp->f_mapping->host;
 	struct fuse_conn *fc = get_fuse_conn(inode);
-#ifdef VENDOR_EDIT
-//shubin@BSP.Kernel.FS 2020/08/20 improving fuse storage performance
 	struct fuse_file *ff = iocb->ki_filp->private_data;
 	ssize_t ret_val;
-#endif /* VENDOR_EDIT */
 
 	if (fuse_is_bad(inode))
 		return -EIO;
@@ -1009,6 +1006,9 @@ static ssize_t fuse_file_read_iter(struct kiocb *iocb, struct iov_iter *to)
 
 	return ret_val;
 #else
+
+	if (ff->passthrough.filp)
+		return fuse_passthrough_read_iter(iocb, to);
 	return generic_file_read_iter(iocb, to);
 #endif /* VENDOR_EDIT */
 }
@@ -1248,15 +1248,15 @@ static ssize_t fuse_file_write_iter(struct kiocb *iocb, struct iov_iter *from)
 {
 	struct file *file = iocb->ki_filp;
 	struct address_space *mapping = file->f_mapping;
-#ifdef VENDOR_EDIT
-//shubin@BSP.Kernel.FS 2020/08/20 improving fuse storage performance
-	struct fuse_file *ff = file->private_data;
-#endif /* VENDOR_EDIT */
 	ssize_t written = 0;
 	ssize_t written_buffered = 0;
 	struct inode *inode = mapping->host;
 	ssize_t err;
 	loff_t endbyte = 0;
+	struct fuse_file *ff = file->private_data;
+
+	if (ff->passthrough.filp)
+		return fuse_passthrough_write_iter(iocb, from);
 
 #ifdef VENDOR_EDIT
 //shubin@BSP.Kernel.FS 2020/08/20 improving fuse storage performance
