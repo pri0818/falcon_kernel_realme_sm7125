@@ -805,7 +805,6 @@ struct ion_heap *ion_system_heap_create(struct ion_platform_heap *data)
 #endif /* CONFIG_OPLUS_ION_BOOSTPOOL */
 	mutex_init(&heap->split_page_mutex);
 
-	heap->heap.debug_show = ion_system_heap_debug_show;
 	return &heap->heap;
 
 destroy_uncached_pools:
