@@ -62,23 +62,12 @@
 static struct ion_device *internal_dev;
 static atomic_long_t total_heap_bytes;
 
-int ion_walk_heaps(int heap_id, enum ion_heap_type type, void *data,
-		   int (*f)(struct ion_heap *heap, void *data))
-{
-	int ret_val = 0;
-	struct ion_heap *heap;
-	struct ion_device *dev = internal_dev;
-	/*
-	 * traverse the list of heaps available in this system
-	 * and find the heap that is specified.
-	 */
-	down_write(&dev->lock);
-	plist_for_each_entry(heap, &dev->heaps, node) {
-		if (ION_HEAP(heap->id) != heap_id ||
-		    type != heap->type)
-			continue;
-		ret_val = f(heap, data);
-		break;
+static struct ion_device ion_dev = {
+	.heaps = PLIST_HEAD_INIT(ion_dev.heaps),
+	.dev = {
+		.minor = MISC_DYNAMIC_MINOR,
+		.name = "ion",
+		.fops = &ion_fops
 	}
 	up_write(&dev->lock);
 	return ret_val;
@@ -1105,23 +1094,13 @@ struct dma_buf *ion_alloc_dmabuf(size_t len, unsigned int heap_id_mask,
 	if (!len)
 		return ERR_PTR(-EINVAL);
 
-	down_read(&dev->lock);
-	plist_for_each_entry(heap, &dev->heaps, node) {
-		/* if the caller didn't specify this heap id */
-		if (!((1 << heap->id) & heap_id_mask))
-			continue;
-#ifdef CONFIG_OPLUS_ION_BOOSTPOOL
-		if (heap->id == ION_SYSTEM_HEAP_ID &&
-		    (heap_id_mask & (1UL << ION_CAMERA_HEAP_ID)))
-			buffer = ion_buffer_create(heap, dev, len,
-						   flags | ION_FLAG_CAMERA_BUFFER);
-		else
-#endif
-			buffer = ion_buffer_create(heap, dev, len, flags);
-		if (!IS_ERR(buffer) || PTR_ERR(buffer) == -EINTR)
-			break;
+	plist_for_each_entry(heap, &idev->heaps, node) {
+		if (BIT(heap->id) & heap_id_mask) {
+			buffer = ion_buffer_create(heap, len, flags);
+			if (!IS_ERR(buffer) || PTR_ERR(buffer) == -EINTR)
+				break;
+		}
 	}
-	up_read(&dev->lock);
 
 	if (!buffer)
 		return ERR_PTR(-ENODEV);
@@ -1210,7 +1189,7 @@ int ion_alloc_fd(size_t len, unsigned int heap_id_mask, unsigned int flags)
 	return fd;
 }
 
-int ion_query_heaps(struct ion_heap_query *query)
+void ion_add_heap(struct ion_device *idev, struct ion_heap *heap)
 {
 	struct ion_device *dev = internal_dev;
 	struct ion_heap_data __user *buffer = u64_to_user_ptr(query->heaps);
@@ -1230,55 +1209,8 @@ int ion_query_heaps(struct ion_heap_query *query)
 	if (query->cnt <= 0)
 		goto out;
 
-	max_cnt = query->cnt;
-
-	plist_for_each_entry(heap, &dev->heaps, node) {
-		strlcpy(hdata.name, heap->name, sizeof(hdata.name));
-		hdata.name[sizeof(hdata.name) - 1] = '\0';
-		hdata.type = heap->type;
-		hdata.heap_id = heap->id;
-
-		if (copy_to_user(&buffer[cnt], &hdata, sizeof(hdata))) {
-			ret = -EFAULT;
-			goto out;
-		}
-
-		cnt++;
-		if (cnt >= max_cnt)
-			break;
-	}
-
-	query->cnt = cnt;
-	ret = 0;
-out:
-	up_read(&dev->lock);
-	return ret;
-}
-
-static const struct file_operations ion_fops = {
-	.owner          = THIS_MODULE,
-	.unlocked_ioctl = ion_ioctl,
-#ifdef CONFIG_COMPAT
-	.compat_ioctl	= ion_ioctl,
-#endif
-};
-
-static int debug_shrink_set(void *data, u64 val)
-{
-	struct ion_heap *heap = data;
-	struct shrink_control sc;
-	int objs;
-
-	sc.gfp_mask = GFP_HIGHUSER;
-	sc.nr_to_scan = val;
-
-	if (!val) {
-		objs = heap->shrinker.count_objects(&heap->shrinker, &sc);
-		sc.nr_to_scan = objs;
-	}
-
-	heap->shrinker.scan_objects(&heap->shrinker, &sc);
-	return 0;
+	plist_node_init(&heap->node, -heap->id);
+	plist_add(&heap->node, &idev->heaps);
 }
 
 static int debug_shrink_get(void *data, u64 *val)
@@ -1287,56 +1219,10 @@ static int debug_shrink_get(void *data, u64 *val)
 	struct shrink_control sc;
 	int objs;
 
-	sc.gfp_mask = GFP_HIGHUSER;
-	sc.nr_to_scan = 0;
-
-	objs = heap->shrinker.count_objects(&heap->shrinker, &sc);
-	*val = objs;
-	return 0;
-}
-
-DEFINE_SIMPLE_ATTRIBUTE(debug_shrink_fops, debug_shrink_get,
-			debug_shrink_set, "%llu\n");
-
-void ion_device_add_heap(struct ion_device *dev, struct ion_heap *heap)
-{
-	struct dentry *debug_file;
-
-	if (!heap->ops->allocate || !heap->ops->free)
-		pr_err("%s: can not add heap with invalid ops struct.\n",
-		       __func__);
-
-	spin_lock_init(&heap->free_lock);
-	heap->free_list_size = 0;
-
-	if (heap->flags & ION_HEAP_FLAG_DEFER_FREE)
-		ion_heap_init_deferred_free(heap);
-
-	if ((heap->flags & ION_HEAP_FLAG_DEFER_FREE) || heap->ops->shrink)
-		ion_heap_init_shrinker(heap);
-
-	heap->dev = dev;
-	down_write(&dev->lock);
-	/*
-	 * use negative heap->id to reverse the priority -- when traversing
-	 * the list later attempt higher id numbers first
-	 */
-	plist_node_init(&heap->node, -heap->id);
-	plist_add(&heap->node, &dev->heaps);
-
-	if (heap->shrinker.count_objects && heap->shrinker.scan_objects) {
-		char debug_name[64];
-
-		snprintf(debug_name, 64, "%s_shrink", heap->name);
-		debug_file = debugfs_create_file(
-			debug_name, 0644, dev->debug_root, heap,
-			&debug_shrink_fops);
-		if (!debug_file) {
-			char buf[256], *path;
-
-			path = dentry_path(dev->debug_root, buf, 256);
-			pr_err("Failed to create heap shrinker debugfs at %s/%s\n",
-			       path, debug_name);
+	plist_for_each_entry(heap, &idev->heaps, node) {
+		if (heap->type == type && ION_HEAP(heap->id) == heap_id) {
+			ret = f(heap, data);
+			break;
 		}
 	}
 
