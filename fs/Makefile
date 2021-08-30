@@ -139,3 +139,4 @@ obj-$(CONFIG_EFIVAR_FS)		+= efivarfs/
 #huyu@BSP.Driver, 2020/08/13, Add for exfat filesystem
 obj-$(CONFIG_EXFAT_FS)		+= exfat/
 #endif /*OPLUS_FEATURE_EXFAT_SUPPORT*/
+obj-$(CONFIG_EROFS_FS)		+= erofs/
