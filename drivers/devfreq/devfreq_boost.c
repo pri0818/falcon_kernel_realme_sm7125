@@ -33,6 +33,8 @@ struct df_boost_drv {
 	struct notifier_block msm_drm_notif;
 };
 
+extern int kp_active_mode(void);
+
 static void devfreq_input_unboost(struct work_struct *work);
 static void devfreq_max_unboost(struct work_struct *work);
 
