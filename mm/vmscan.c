@@ -522,7 +522,7 @@ static unsigned long shrink_slab(gfp_t gfp_mask, int nid,
 
 	read_lock(&shrinker_rwlock);
 	/* Use the RCU list iteration primitive to allow concurrent additions */
-	list_for_each_entry(shrinker, &shrinker_list, list) {
+	list_for_each_entry_rcu(shrinker, &shrinker_list, list) {
 		struct shrink_control sc = {
 			.gfp_mask = gfp_mask,
 			.nid = nid,
