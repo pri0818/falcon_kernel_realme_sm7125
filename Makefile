@@ -528,6 +528,8 @@ endif
 ifeq ($(cc-name),clang)
 ifdef CONFIG_POLLY_CLANG
 KBUILD_CFLAGS += -mllvm -polly \
+                   -mllvm -polly-run-dce \
+                   -mllvm -polly-detect-keep-going \
 		   -mllvm -polly-run-inliner \
 		   -mllvm -polly-opt-fusion=max \
 		   -mllvm -polly-ast-use-context \
