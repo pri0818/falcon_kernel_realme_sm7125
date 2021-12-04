@@ -582,12 +582,6 @@ int schedtune_prefer_idle(struct task_struct *p)
 	rcu_read_lock();
 	st = task_schedtune(p);
 	prefer_idle = st->prefer_idle;
-#ifdef OPLUS_FEATURE_UIFIRST
-// XieLiujie@BSP.KERNEL.PERFORMANCE, 2020/05/25, Add for UIFirst
-	if (sysctl_uifirst_enabled && sysctl_launcher_boost_enabled && test_task_ux(p)) {
-		prefer_idle = 1;
-	}
-#endif /* OPLUS_FEATURE_UIFIRST */
 	rcu_read_unlock();
 
 	return prefer_idle;
