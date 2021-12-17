@@ -156,6 +156,8 @@ struct ion_device {
 	struct mutex buffer_lock;
 	struct rw_semaphore lock;
 	struct plist_head heaps;
+	struct dentry *debug_root;
+	int heap_cnt;
 };
 
 /* refer to include/linux/pm.h */
@@ -284,7 +286,7 @@ struct ion_device *ion_device_create(void);
  * @dev:		the device
  * @heap:		the heap to add
  */
-void ion_add_heap(struct ion_device *idev, struct ion_heap *heap);
+void ion_device_add_heap(struct ion_device *dev, struct ion_heap *heap);
 
 /**
  * some helpers for common operations on buffers using the sg_table
