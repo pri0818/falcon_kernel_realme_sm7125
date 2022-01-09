@@ -3745,6 +3745,7 @@ unsigned long long task_sched_runtime(struct task_struct *p)
 
 unsigned int capacity_margin_freq = 1280; /* ~20% margin */
 
+/*
 #ifdef OPLUS_FEATURE_UIFIRST
 // XuHaifeng@BSP.KERNEL.PERFORMANCE, 2020/08/18, Add for UIFirst(slide boost)
 extern int sysctl_frame_rate;
@@ -3788,6 +3789,7 @@ static u64 calc_freq_ux_load(struct task_struct *p, u64 wallclock)
 	return max(freq_exec_load, freq_ravg_load);
 }
 #endif
+*/
 
 /*
  * This function gets called by the timer code, with HZ frequency.
@@ -3822,24 +3824,7 @@ void scheduler_tick(void)
 	early_notif = early_detection_notify(rq, wallclock);
 	if (early_notif)
 		flag = SCHED_CPUFREQ_WALT | SCHED_CPUFREQ_EARLY_DET;
-	#ifdef OPLUS_FEATURE_UIFIRST
-	// XuHaifeng@BSP.KERNEL.PERFORMANCE, 2020/08/18, Add for UIFirst(slide boost)
-	if (sysctl_uifirst_enabled && sysctl_slide_boost_enabled) {
-		if(rq->curr && rq->curr->static_ux == 2 && !ux_task_misfit(rq->curr, cpu)) {
-			ux_task_load[cpu] = calc_freq_ux_load(rq->curr, wallclock);
-			ux_load_ts[cpu] = wallclock;
-			flag |= (SCHED_CPUFREQ_WALT | SCHED_CPUFREQ_BOOST);
-		}
-		else if (ux_task_load[cpu] != 0) {
-			ux_task_load[cpu] = 0;
-			ux_load_ts[cpu] = wallclock;
-			flag |= (SCHED_CPUFREQ_WALT | SCHED_CPUFREQ_RESET);
-		}
-	} else {
-		ux_task_load[cpu] = 0;
-		ux_load_ts[cpu] = 0;
-	}
-	#endif
+
 	cpufreq_update_util(rq, flag);
 	rq_unlock(rq, &rf);
 
