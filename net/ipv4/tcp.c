@@ -1616,7 +1616,6 @@ void __sk_defer_free_flush(struct sock *sk)
 	head = llist_del_all(&sk->defer_list);
 	llist_for_each_entry_safe(skb, n, head, ll_node) {
 		prefetch(n);
-		skb_mark_not_on_list(skb);
 		__kfree_skb(skb);
 	}
 }
