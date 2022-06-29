@@ -1021,7 +1021,7 @@ void __init swap_setup(void)
 	 * Right now other parts of the system means that we
 	 * _really_ don't want to cluster much more
 	 */
-#if defined(OPLUS_FEATURE_ZRAM_OPT) && defined(CONFIG_OPLUS_ZRAM_OPT)
+#ifdef CONFIG_OPLUS_MM_HACKS
 	page_cluster = 0;
-#endif /*OPLUS_FEATURE_ZRAM_OPT*/
+#endif /* CONFIG_OPLUS_MM_HACKS */
 }
