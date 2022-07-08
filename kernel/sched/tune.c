@@ -13,6 +13,7 @@
 
 bool schedtune_initialized = false;
 extern struct reciprocal_value schedtune_spc_rdiv;
+extern int kp_active_mode(void);
 
 /* We hold schedtune boost in effect for at least this long */
 #define SCHEDTUNE_BOOST_HOLD_NS 50000000ULL
@@ -573,7 +574,7 @@ int schedtune_task_boost(struct task_struct *p)
 	struct schedtune *st;
 	int task_boost;
 
-	if (unlikely(!schedtune_initialized))
+	if (unlikely(!schedtune_initialized) || (kp_active_mode() == 1))
 		return 0;
 
 	/* Get task boost value */
@@ -608,7 +609,7 @@ int schedtune_prefer_idle(struct task_struct *p)
 	struct schedtune *st;
 	int prefer_idle;
 
-	if (unlikely(!schedtune_initialized))
+	if (unlikely(!schedtune_initialized) || (kp_active_mode() == 1))
 		return 0;
 
 	/* Get prefer_idle value */
@@ -624,6 +625,9 @@ static u64
 prefer_idle_read(struct cgroup_subsys_state *css, struct cftype *cft)
 {
 	struct schedtune *st = css_st(css);
+
+	if (kp_active_mode() == 1)
+		return 0;
 
 	return st->prefer_idle;
 }
@@ -642,6 +646,9 @@ static s64
 boost_read(struct cgroup_subsys_state *css, struct cftype *cft)
 {
 	struct schedtune *st = css_st(css);
+
+	if (kp_active_mode() == 1)
+		return 0;
 
 	return st->boost;
 }
