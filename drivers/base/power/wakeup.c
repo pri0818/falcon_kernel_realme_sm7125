@@ -970,14 +970,8 @@ void pm_get_active_wakeup_sources(char *pending_wakeup_source, size_t max)
 			if (!active)
 				len += scnprintf(pending_wakeup_source, max,
 						"Pending Wakeup Sources: ");
-#ifndef OPLUS_FEATURE_POWERINFO_STANDBY_DEBUG
-//Nanwei.Deng@BSP.CHG.Basic 2018/05/03 modify for power debug
 			len += scnprintf(pending_wakeup_source + len, max - len,
 				"%s ", ws->name);
-#else
-			len += scnprintf(pending_wakeup_source + len, max - len,
-				"%s, %ld, %ld ", ws->name, ws->active_count, ktime_to_ms(ws->total_time));
-#endif
 			active = true;
 		} else if (!active &&
 			   (!last_active_ws ||
@@ -987,51 +981,35 @@ void pm_get_active_wakeup_sources(char *pending_wakeup_source, size_t max)
 		}
 	}
 	if (!active && last_active_ws) {
-#ifndef OPLUS_FEATURE_POWERINFO_STANDBY_DEBUG
-//Nanwei.Deng@BSP.CHG.Basic 2018/05/03 modify for power debug
 		scnprintf(pending_wakeup_source, max,
 				"Last active Wakeup Source: %s",
 				last_active_ws->name);
-#else
-		scnprintf(pending_wakeup_source, max,
-				"Last active Wakeup Source: %s, %ld, %ld",
-				last_active_ws->name, last_active_ws->active_count, ktime_to_ms(last_active_ws->total_time));
-#endif
 	}
 	srcu_read_unlock(&wakeup_srcu, srcuidx);
-#ifdef OPLUS_FEATURE_POWERINFO_STANDBY_DEBUG
-//Nanwei.Deng@BSP.CHG.Basic 2018/05/03 modify for power debug
-	pr_info("%s, active: %d, pending: %s for debug\n", __func__, active, pending_wakeup_source);
-#endif
 }
-EXPORT_SYMBOL_GPL(pm_get_active_wakeup_sources);
+EXPORT_SYMBOL_GPL(pm_get_active_wakeup_sources);;
 
 void pm_print_active_wakeup_sources(void)
-{
-	struct wakeup_source *ws;
-	int srcuidx, active = 0;
-	struct wakeup_source *last_activity_ws = NULL;
-
-	srcuidx = srcu_read_lock(&wakeup_srcu);
-	list_for_each_entry_rcu(ws, &wakeup_sources, entry) {
-		if (ws->active) {
-			#ifdef OPLUS_FEATURE_POWERINFO_STANDBY_DEBUG
-			//Nanwei.Deng@BSP.Power.Basic, 2020/07/27, add for wakelock profiler
-			pr_info("active wakeup source: %s, %ld, %ld\n", ws->name, ws->active_count, ktime_to_ms(ws->total_time));
-			#else
-			pr_debug("active wakeup source: %s\n", ws->name);
-			#endif /* OPLUS_FEATURE_POWERINFO_STANDBY_DEBUG */
-			active = 1;
-#ifdef CONFIG_BOEFFLA_WL_BLOCKER
-			if (!check_for_block(ws))	// AP: check if wakelock is on wakelock blocker list
-#endif
-		} else if (!active &&
-			   (!last_activity_ws ||
-			    ktime_to_ns(ws->last_time) >
-			    ktime_to_ns(last_activity_ws->last_time))) {
-			last_activity_ws = ws;
+	{
+		struct wakeup_source *ws;
+		int srcuidx, active = 0;
+		struct wakeup_source *last_activity_ws = NULL;
+	
+		srcuidx = srcu_read_lock(&wakeup_srcu);
+		list_for_each_entry_rcu(ws, &wakeup_sources, entry) {
+			if (ws->active) {
+				pr_info("active wakeup source: %s\n", ws->name);
+	#ifdef CONFIG_BOEFFLA_WL_BLOCKER
+				if (!check_for_block(ws))	// AP: check if wakelock is on wakelock blocker list
+	#endif
+					active = 1;
+			} else if (!active &&
+				   (!last_activity_ws ||
+				    ktime_to_ns(ws->last_time) >
+				    ktime_to_ns(last_activity_ws->last_time))) {
+				last_activity_ws = ws;
+			}
 		}
-	}
 
 	if (!active && last_activity_ws) {
 		#ifdef OPLUS_FEATURE_POWERINFO_STANDBY_DEBUG
