@@ -520,9 +520,8 @@ static unsigned long shrink_slab(gfp_t gfp_mask, int nid,
 	if (memcg && (!memcg_kmem_enabled() || !mem_cgroup_online(memcg)))
 		return 0;
 
-	if (!down_read_trylock(&shrinker_rwsem))
-		goto out;
-
+	read_lock(&shrinker_rwlock);
+	/* Use the RCU list iteration primitive to allow concurrent additions */
 	list_for_each_entry(shrinker, &shrinker_list, list) {
 		struct shrink_control sc = {
 			.gfp_mask = gfp_mask,
