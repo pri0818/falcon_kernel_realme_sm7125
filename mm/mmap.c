@@ -2900,20 +2900,12 @@ static void unmap_region(struct mm_struct *mm,
 	struct mmu_gather tlb;
 	struct vm_area_struct *cur_vma;
 
-#if defined(OPLUS_FEATURE_VIRTUAL_RESERVE_MEMORY) && defined(CONFIG_VIRTUAL_RESERVE_MEMORY)
-	if (BACKUP_ALLOC_FLAG(vma->vm_flags)) {
-		free_flooring_addr = mm->reserve_vma->vm_start;
-		free_ceiling_addr = mm->reserve_vma->vm_end;
-		next = prev ? prev->vm_next : mm->reserve_mmap;
-	} else
-		next = prev ? prev->vm_next : mm->mmap;
-#endif
-
 	lru_add_drain();
 	tlb_gather_mmu(&tlb, mm, start, end);
 	update_hiwater_rss(mm);
 	unmap_vmas(&tlb, vma, start, end);
-       	/*
+
+   	/*
 	 * Ensure we have no stale TLB entries by the time this mapping is
 	 * removed from the rmap.
 	 * Note that we don't have to worry about nested flushes here because
@@ -2928,13 +2920,8 @@ static void unmap_region(struct mm_struct *mm,
 		}
 	}
 
-#if defined(OPLUS_FEATURE_VIRTUAL_RESERVE_MEMORY) && defined(CONFIG_VIRTUAL_RESERVE_MEMORY)
-	free_pgtables(&tlb, vma, prev ? prev->vm_end : free_flooring_addr,
-			next ? next->vm_start : free_ceiling_addr);
-#else
 	free_pgtables(&tlb, vma, prev ? prev->vm_end : FIRST_USER_ADDRESS,
 				 next ? next->vm_start : USER_PGTABLES_CEILING);
-#endif
 	tlb_finish_mmu(&tlb, start, end);
 }
 
