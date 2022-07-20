@@ -34,7 +34,7 @@
 		qcom,mdss-dsi-dma-schedule-line = <5>;
 
 		qcom,mdss-dsi-lp11-init;
-		qcom,dsi-supported-dfps-list = <60 90 45>;
+		qcom,dsi-supported-dfps-list = <90>;
 		qcom,mdss-dsi-pan-enable-dynamic-fps;
 		qcom,mdss-dsi-pan-fps-update = "dfps_immediate_porch_mode_vfp";
 
