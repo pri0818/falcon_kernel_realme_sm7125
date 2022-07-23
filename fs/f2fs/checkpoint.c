@@ -1453,18 +1453,9 @@ static int do_checkpoint(struct f2fs_sb_info *sbi, struct cp_control *cpc)
 	struct curseg_info *seg_i = CURSEG_I(sbi, CURSEG_HOT_NODE);
 	u64 kbytes_written;
 	int err;
-#ifdef CONFIG_F2FS_BD_STAT
-	u64 cp_flush_meta_begin;
-#endif
-
+	
 	/* Flush all the NAT/SIT pages */
-#ifdef CONFIG_F2FS_BD_STAT
-	cp_flush_meta_begin = local_clock();
-#endif
 	f2fs_sync_meta_pages(sbi, META, LONG_MAX, FS_CP_META_IO);
-#ifdef CONFIG_F2FS_BD_STAT
-	*cp_flush_meta_time += local_clock() - cp_flush_meta_begin;
-#endif
 
 	/* start to update checkpoint, cp ver is already updated previously */
 
@@ -1627,10 +1618,6 @@ int f2fs_write_checkpoint(struct f2fs_sb_info *sbi, struct cp_control *cpc)
 	struct f2fs_checkpoint *ckpt = F2FS_CKPT(sbi);
 	unsigned long long ckpt_ver;
 	int err = 0;
-#ifdef CONFIG_F2FS_BD_STAT
-	u64 cp_begin = 0, cp_end, cp_submit_end = 0, discard_begin, discard_end;
-	u64 cp_flush_meta_time, cp_flush_meta_begin;
-#endif
 
 	if (f2fs_readonly(sbi->sb) || f2fs_hw_is_readonly(sbi))
 		return -EROFS;
@@ -1654,9 +1641,6 @@ int f2fs_write_checkpoint(struct f2fs_sb_info *sbi, struct cp_control *cpc)
 
 	trace_f2fs_write_checkpoint(sbi->sb, cpc->reason, "start block_ops");
 
-#ifdef CONFIG_F2FS_BD_STAT
-	cp_begin = local_clock();
-#endif
 	err = block_operations(sbi);
 	if (err)
 		goto out;
@@ -1664,9 +1648,6 @@ int f2fs_write_checkpoint(struct f2fs_sb_info *sbi, struct cp_control *cpc)
 	trace_f2fs_write_checkpoint(sbi->sb, cpc->reason, "finish block_ops");
 
 	f2fs_flush_merged_writes(sbi);
-#ifdef CONFIG_F2FS_BD_STAT
-	cp_submit_end = local_clock();
-#endif
 
 	/* this is the case of multiple fstrims without any changes */
 	if (cpc->reason & CP_DISCARD) {
@@ -1678,22 +1659,8 @@ int f2fs_write_checkpoint(struct f2fs_sb_info *sbi, struct cp_control *cpc)
 		if (NM_I(sbi)->nat_cnt[DIRTY_NAT] == 0 &&
 				SIT_I(sbi)->dirty_sentries == 0 &&
 				prefree_segments(sbi) == 0) {
-#ifdef CONFIG_F2FS_BD_STAT
-			cp_flush_meta_begin = local_clock();
-#endif
 			f2fs_flush_sit_entries(sbi, cpc);
-#ifdef CONFIG_F2FS_BD_STAT
-			discard_begin = local_clock();
-			cp_flush_meta_time = discard_begin - cp_flush_meta_begin;
-#endif
 			f2fs_clear_prefree_segments(sbi, cpc);
-#ifdef CONFIG_F2FS_BD_STAT
-			discard_end = local_clock();
-			bd_lock(sbi);
-			bd_max_val(sbi, max_cp_discard_time,
-				   discard_end - discard_begin);
-			bd_unlock(sbi);
-#endif
 			unblock_operations(sbi);
 			goto out;
 		}
@@ -1731,7 +1698,6 @@ int f2fs_write_checkpoint(struct f2fs_sb_info *sbi, struct cp_control *cpc)
 
 	f2fs_restore_inmem_curseg(sbi);
 stop:
-	restore_virtual_curseg_status(sbi, false);
 	unblock_operations(sbi);
 	stat_inc_cp_count(sbi->stat_info);
 

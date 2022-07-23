@@ -24,7 +24,6 @@
 
 #define IS_DATASEG(t)	((t) <= CURSEG_COLD_DATA)
 #define IS_NODESEG(t)	((t) >= CURSEG_HOT_NODE && (t) <= CURSEG_COLD_NODE)
-
 #define SE_PAGETYPE(se)	((IS_NODESEG((se)->type) ? NODE : DATA))
 
 static inline void sanity_check_seg_type(struct f2fs_sb_info *sbi,
@@ -133,19 +132,6 @@ static inline void sanity_check_seg_type(struct f2fs_sb_info *sbi,
 #define SECTOR_TO_BLOCK(sectors)					\
 	((sectors) >> F2FS_LOG_SECTORS_PER_BLOCK)
 
-#ifdef CONFIG_F2FS_GRADING_SSR
-#define KBS_PER_SEGMENT 2048
-#endif
-
-#define SSR_CONTIG_DIRTY_NUMS	32	/*Dirty pages for LFS alloction in grading ssr . */
-#define SSR_CONTIG_LARGE	256	/*Larege files */
-
-enum {
-	SEQ_NONE,
-	SEQ_32BLKS,
-	SEQ_256BLKS
-};
-
 /*
  * indicate a block allocation direction: RIGHT and LEFT.
  * RIGHT means allocating new sections towards the end of volume.
@@ -153,8 +139,7 @@ enum {
  */
 enum {
 	ALLOC_RIGHT = 0,
-	ALLOC_LEFT,
-	ALLOC_SPREAD,	/* for subdivision allocation only */
+	ALLOC_LEFT
 };
 
 /*
@@ -193,13 +178,6 @@ enum {
 	BG_GC = 0,
 	FG_GC,
 };
-
-#ifdef CONFIG_F2FS_GRADING_SSR
-enum {
-	GRADING_SSR_OFF = 0,
-	GRADING_SSR_ON
-};
-#endif
 
 /* for a function parameter to select a victim segment */
 struct victim_sel_policy {
@@ -242,11 +220,7 @@ struct sec_entry {
 };
 
 struct segment_allocation {
-	void (*allocate_segment)(struct f2fs_sb_info *, int, bool, int);
-	void (*get_new_segment)(struct f2fs_sb_info *,
-					unsigned int *, bool , int);
-	void (*new_curseg)(struct f2fs_sb_info *, int, bool);
-	void (*__new_curseg)(struct f2fs_sb_info *, struct curseg_info *,int, bool);
+	void (*allocate_segment)(struct f2fs_sb_info *, int, bool);
 };
 
 #define MAX_SKIP_GC_COUNT			16
@@ -694,11 +668,7 @@ static inline int utilization(struct f2fs_sb_info *sbi)
  * F2FS_IPU_DISABLE - disable IPU. (=default option in LFS mode)
  */
 #define DEF_MIN_IPU_UTIL	70
-/* VENDOR_EDIT yanwu@TECH.Storage.FS.oF2FS
- * 2019/08/12, enlarge min_fsync_blocks to optimize performance
- */
 #define DEF_MIN_FSYNC_BLOCKS	20
-//#define DEF_MIN_FSYNC_BLOCKS	8
 #define DEF_MIN_HOT_BLOCKS	16
 
 #define SMALL_VOLUME_SEGMENTS	(16 * 512)	/* 16GB */

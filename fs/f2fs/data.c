@@ -1408,7 +1408,7 @@ got_it:
 	return page;
 }
 
-static int __allocate_data_block(struct dnode_of_data *dn, int seg_type, int contig_level)
+static int __allocate_data_block(struct dnode_of_data *dn, int seg_type)
 {
 	struct f2fs_sb_info *sbi = F2FS_I_SB(dn->inode);
 	struct f2fs_summary sum;
@@ -1587,7 +1587,7 @@ next_block:
 		/* use out-place-update for driect IO under LFS mode */
 		if (f2fs_lfs_mode(sbi) && flag == F2FS_GET_BLOCK_DIO &&
 							map->m_may_create) {
-			err = __allocate_data_block(&dn, map->m_seg_type, contig_level);
+			err = __allocate_data_block(&dn, map->m_seg_type);
 			if (err)
 				goto sync_out;
 			blkaddr = dn.data_blkaddr;

@@ -76,10 +76,6 @@ static unsigned char *__struct_ptr(struct f2fs_sb_info *sbi, int struct_type)
 		return (unsigned char *)NM_I(sbi);
 	else if (struct_type == F2FS_SBI || struct_type == RESERVED_BLOCKS)
 		return (unsigned char *)sbi;
-#ifdef CONFIG_F2FS_GRADING_SSR
-	else if (struct_type == F2FS_HOT_COLD_PARAMS)
-		return (unsigned char*)&sbi->hot_cold_params;
-#endif
 #ifdef CONFIG_F2FS_FAULT_INJECTION
 	else if (struct_type == FAULT_INFO_RATE ||
 					struct_type == FAULT_INFO_TYPE)
@@ -517,6 +513,7 @@ out:
 		}
 		return count;
 	}
+
 	if (!strcmp(a->attr.name, "gc_urgent_high_remaining")) {
 		spin_lock(&sbi->gc_urgent_high_lock);
 		sbi->gc_urgent_high_limited = t != 0;
@@ -531,33 +528,6 @@ out:
 		sbi->iostat_enable = !!t;
 		if (!sbi->iostat_enable)
 			f2fs_reset_iostat(sbi);
-		return count;
-	}
-
-	/* VENDOR_EDIT huangjianan@TECH.Storage.FS
-	 * 2020-1-14, add for oDiscard decoupling
-	 */
-	if (!strcmp(a->attr.name, "fsync_protect")) {
-		sbi->fsync_protect = !!t;
-		return count;
-	}
-
-	if (!strcmp(a->attr.name, "dpolicy_expect")) {
-		if (!sbi->dc_opt_enable)
-			return count;
-
-		if (t == DPOLICY_BG)
-			sbi->dpolicy_expect = DPOLICY_BG;
-		else if (t == DPOLICY_BALANCE) {
-			sbi->dpolicy_expect= DPOLICY_BALANCE;
-			wake_up_discard_thread_aggressive(sbi,
-						DPOLICY_BALANCE);
-		}
-		else if (t == DPOLICY_PERFORMANCE) {
-			sbi->dpolicy_expect= DPOLICY_PERFORMANCE;
-			wake_up_discard_thread_aggressive(sbi,
-						DPOLICY_PERFORMANCE);
-		}
 		return count;
 	}
 
@@ -799,24 +769,6 @@ F2FS_RW_ATTR(F2FS_SBI, f2fs_sb_info, readdir_ra, readdir_ra);
 F2FS_RW_ATTR(F2FS_SBI, f2fs_sb_info, max_io_bytes, max_io_bytes);
 F2FS_RW_ATTR(F2FS_SBI, f2fs_sb_info, gc_pin_file_thresh, gc_pin_file_threshold);
 F2FS_RW_ATTR(F2FS_SBI, f2fs_super_block, extension_list, extension_list);
-/* VENDOR_EDIT huangjianan@TECH.Storage.FS
- * 2020-1-14, add for oDiscard decoupling
- */
-F2FS_ATTR_OFFSET(F2FS_SBI, fsync_protect, 0666, f2fs_sbi_show, f2fs_sbi_store,
-		 offsetof(struct f2fs_sb_info, fsync_protect));
-F2FS_ATTR_OFFSET(F2FS_SBI, dpolicy_expect, 0666, f2fs_sbi_show, f2fs_sbi_store,
-		 offsetof(struct f2fs_sb_info, dpolicy_expect));
-#ifdef CONFIG_F2FS_GRADING_SSR
-F2FS_RW_ATTR(F2FS_HOT_COLD_PARAMS, f2fs_hot_cold_params, hc_hot_data_lower_limit, hot_data_lower_limit);
-F2FS_RW_ATTR(F2FS_HOT_COLD_PARAMS, f2fs_hot_cold_params, hc_hot_data_waterline, hot_data_waterline);
-F2FS_RW_ATTR(F2FS_HOT_COLD_PARAMS, f2fs_hot_cold_params, hc_warm_data_lower_limit, warm_data_lower_limit);
-F2FS_RW_ATTR(F2FS_HOT_COLD_PARAMS, f2fs_hot_cold_params, hc_warm_data_waterline, warm_data_waterline);
-F2FS_RW_ATTR(F2FS_HOT_COLD_PARAMS, f2fs_hot_cold_params, hc_hot_node_lower_limit, hot_node_lower_limit);
-F2FS_RW_ATTR(F2FS_HOT_COLD_PARAMS, f2fs_hot_cold_params, hc_hot_node_waterline, hot_node_waterline);
-F2FS_RW_ATTR(F2FS_HOT_COLD_PARAMS, f2fs_hot_cold_params, hc_warm_node_lower_limit, warm_node_lower_limit);
-F2FS_RW_ATTR(F2FS_HOT_COLD_PARAMS, f2fs_hot_cold_params, hc_warm_node_waterline, warm_node_waterline);
-F2FS_RW_ATTR(F2FS_HOT_COLD_PARAMS, f2fs_hot_cold_params, hc_enable, enable);
-#endif
 #ifdef CONFIG_F2FS_FAULT_INJECTION
 F2FS_RW_ATTR(FAULT_INFO_RATE, f2fs_fault_info, inject_rate, inject_rate);
 F2FS_RW_ATTR(FAULT_INFO_TYPE, f2fs_fault_info, inject_type, inject_type);
@@ -899,8 +851,6 @@ static struct attribute *f2fs_attrs[] = {
 	ATTR_LIST(gc_no_gc_sleep_time),
 	ATTR_LIST(gc_idle),
 	ATTR_LIST(gc_urgent),
-	ATTR_LIST(gc_age_threshold),
-	ATTR_LIST(gc_dirty_rate_threshold),
 	ATTR_LIST(reclaim_segments),
 	ATTR_LIST(main_blkaddr),
 	ATTR_LIST(max_small_discards),
@@ -937,22 +887,6 @@ static struct attribute *f2fs_attrs[] = {
 	ATTR_LIST(max_io_bytes),
 	ATTR_LIST(gc_pin_file_thresh),
 	ATTR_LIST(extension_list),
-	/* VENDOR_EDIT huangjianan@TECH.Storage.FS
-	 * 2020-1-14, add for oDiscard decoupling
-	 */
-	ATTR_LIST(fsync_protect),
-	ATTR_LIST(dpolicy_expect),
-#ifdef CONFIG_F2FS_GRADING_SSR
-	ATTR_LIST(hc_hot_data_lower_limit),
-	ATTR_LIST(hc_hot_data_waterline),
-	ATTR_LIST(hc_warm_data_lower_limit),
-	ATTR_LIST(hc_warm_data_waterline),
-	ATTR_LIST(hc_hot_node_lower_limit),
-	ATTR_LIST(hc_hot_node_waterline),
-	ATTR_LIST(hc_warm_node_lower_limit),
-	ATTR_LIST(hc_warm_node_waterline),
-	ATTR_LIST(hc_enable),
-#endif
 #ifdef CONFIG_F2FS_FAULT_INJECTION
 	ATTR_LIST(inject_rate),
 	ATTR_LIST(inject_type),
@@ -1236,222 +1170,6 @@ static int __maybe_unused victim_bits_seq_show(struct seq_file *seq,
 	return 0;
 }
 
-/* VENDOR_EDIT yanwu@TECH.Storage.FS.oF2FS
- * 2019/09/11, add f2fs frag_score and undiscard_score
- */
-extern block_t of2fs_seg_freefrag(struct f2fs_sb_info *sbi,
-				unsigned int segno, block_t* blocks, unsigned int n);
-
-static int frag_score_seq_show(struct seq_file *seq, void *offset)
-{
-	struct super_block *sb = seq->private;
-	struct f2fs_sb_info *sbi = F2FS_SB(sb);
-	unsigned int i, total_segs =
-			le32_to_cpu(sbi->raw_super->segment_count_main);
-	block_t blocks[9], total_blocks = 0;
-	unsigned int score;
-	memset(blocks, 0, sizeof(blocks));
-	for (i = 0; i < total_segs; i++) {
-		total_blocks += of2fs_seg_freefrag(sbi, i,
-			blocks, ARRAY_SIZE(blocks));
-		cond_resched();
-	}
-	total_blocks += free_segments(sbi) * (1<<(sbi)->log_blocks_per_seg);
-	f2fs_info(sbi, "Extent Size Range: Free Blocks");
-	for (i = 0; i < ARRAY_SIZE(blocks); i++) {
-		if (!blocks[i])
-			continue;
-		else if (i < 8)
-			f2fs_info(sbi, "%dK...%dK-: %u", 4<<i, 4<<(i+1), blocks[i]);
-		else
-			f2fs_info(sbi, "%dM...%dM-: %u", 1<<(i-8), 1<<(i-7), blocks[i]);
-	}
-
-	score = total_blocks ? (blocks[0] + blocks[1]) * 100ULL / total_blocks : 0;
-	seq_printf(seq, "%u\n", score);
-	return 0;
-}
-
-static int frag_score_open(struct inode *inode, struct file *file)
-{
-	return single_open(file, frag_score_seq_show, PDE_DATA(inode));
-}
-
-static const struct file_operations f2fs_seq_frag_score_fops = {
-	.open = frag_score_open,
-	.read = seq_read,
-	.llseek = seq_lseek,
-	.release = single_release,
-};
-
-static int __maybe_unused free_frag_score_seq_show(struct seq_file *seq, void *offset)
-{
-	struct super_block *sb = seq->private;
-	struct f2fs_sb_info *sbi = F2FS_SB(sb);
-	unsigned int i, total_segs =
-			le32_to_cpu(sbi->raw_super->segment_count_main);
-	block_t blocks[10], total_blocks = 0;
-	memset(blocks, 0, sizeof(blocks));
-	for (i = 0; i < total_segs; i++) {
-		total_blocks += of2fs_seg_freefrag(sbi, i,
-			blocks, ARRAY_SIZE(blocks));
-		cond_resched();
-	}
-
-	blocks[9] = free_segments(sbi) * (1<<(sbi)->log_blocks_per_seg);
-	total_blocks += blocks[9];
-
-	for (i = 0; i < ARRAY_SIZE(blocks); i++) {
-		if (!blocks[i])
-			continue;
-		else if (i < 8)
-			seq_printf(seq, "%dKto%dK:%u\n", 4<<i, 4<<(i+1), blocks[i]);
-		else
-			seq_printf(seq, "%dMto%dM:%u\n", 1<<(i-8), 1<<(i-7), blocks[i]);
-	}
-	return 0;
-}
-
-static int free_frag_score_open(struct inode *inode, struct file *file)
-{
-	return single_open(file, free_frag_score_seq_show, PDE_DATA(inode));
-}
-
-static const struct file_operations f2fs_seq_free_frag_score_fops = {
-	.open = free_frag_score_open,
-	.read = seq_read,
-	.llseek = seq_lseek,
-	.release = single_release,
-};
-
-static int undiscard_score_seq_show(struct seq_file *seq, void *offset)
-{
-	struct super_block *sb = seq->private;
-	struct f2fs_sb_info *sbi = F2FS_SB(sb);
-	unsigned int undiscard_blks = 0;
-	unsigned int free_blks = sbi->user_block_count - valid_user_blocks(sbi);
-	unsigned int score;
-	if (SM_I(sbi) && SM_I(sbi)->dcc_info)
-		undiscard_blks = SM_I(sbi)->dcc_info->undiscard_blks;
-	score = free_blks ? undiscard_blks * 100ULL / free_blks : 0;
-	seq_printf(seq, "%u\n", score < 100 ? score : 100);
-	return 0;
-}
-
-static int undiscard_score_open(struct inode *inode, struct file *file)
-{
-	return single_open(file, undiscard_score_seq_show, PDE_DATA(inode));
-}
-
-static const struct file_operations f2fs_seq_undiscard_score_fops = {
-	.open = undiscard_score_open,
-	.read = seq_read,
-	.llseek = seq_lseek,
-	.release = single_release,
-};
-
-static int gc_opt_enable_seq_show(struct seq_file *seq, void *p)
-{
-	struct super_block *sb = seq->private;
-	struct f2fs_sb_info *sbi = F2FS_SB(sb);
-	seq_printf(seq, "%d\n", sbi->gc_opt_enable);
-	return 0;
-}
-
-static ssize_t gc_opt_enable_write(struct file *filp, const char __user *ubuf,
-	size_t cnt, loff_t *ppos)
-{
-	char buf[8] = { 0 };
-	ssize_t buf_size;
-	struct seq_file *seq = filp->private_data;
-	struct super_block *sb = seq->private;
-	struct f2fs_sb_info *sbi = F2FS_SB(sb);
-
-	if (!cnt) {
-		return 0;
-	}
-
-	buf_size = min(cnt, (size_t)(sizeof(buf)-1));
-	if (copy_from_user(buf, ubuf, buf_size)) {
-			return -EFAULT;
-	}
-	buf[buf_size-1] = 0;
-
-	if (buf[0] == '0') {
-		sbi->gc_opt_enable = false;
-		sbi->interval_time[GC_TIME] = DEF_IDLE_INTERVAL;
-	} else {
-		sbi->gc_opt_enable = true;
-		sbi->interval_time[GC_TIME] = DEF_GC_IDLE_INTERVAL;
-	}
-
-	return cnt;
-}
-
-static int gc_opt_enable_open(struct inode *inode, struct file *file)
-{
-	return single_open(file, gc_opt_enable_seq_show, PDE_DATA(inode));
-}
-
-static const struct file_operations f2fs_seq_gc_opt_enable_fops = {
-	.open = gc_opt_enable_open,
-	.read = seq_read,
-	.write = gc_opt_enable_write,
-	.llseek = seq_lseek,
-	.release = single_release,
-};
-
-/* VENDOR_EDIT shifei.ge@TECH.Storage.FS
- * 2019-08-14, add for oDiscard
- */
-static int f2fs_dc_opt_enable_seq_show(struct seq_file *seq, void *p)
-{
-	struct super_block *sb = seq->private;
-	struct f2fs_sb_info *sbi = F2FS_SB(sb);
-	seq_printf(seq, "%d\n", sbi->dc_opt_enable);
-	return 0;
-}
-
-static ssize_t f2fs_dc_opt_enable_write(struct file *filp, const char __user *ubuf,
-	size_t cnt, loff_t *ppos)
-{
-	char buf[8] = { 0 };
-	ssize_t buf_size;
-	struct seq_file *seq = filp->private_data;
-	struct super_block *sb = seq->private;
-	struct f2fs_sb_info *sbi = F2FS_SB(sb);
-
-	if (!cnt) {
-		return 0;
-	}
-
-	buf_size = min(cnt, (size_t)(sizeof(buf)-1));
-	if (copy_from_user(buf, ubuf, buf_size)) {
-			return -EFAULT;
-	}
-	buf[buf_size-1] = 0;
-
-	if (buf[0] == '0') {
-		sbi->dc_opt_enable = false;
-		sbi->dpolicy_expect = DPOLICY_BG;
-	} else
-		sbi->dc_opt_enable = true;
-
-	return cnt;
-}
-static int f2fs_dc_opt_enable_open(struct inode *inode, struct file *file)
-{
-	return single_open(file, f2fs_dc_opt_enable_seq_show, PDE_DATA(inode));
-}
-
-static const struct file_operations f2fs_dc_opt_enable_fops = {
-	.open = f2fs_dc_opt_enable_open,
-	.read = seq_read,
-	.write = f2fs_dc_opt_enable_write,
-	.llseek = seq_lseek,
-	.release = single_release,
-};
-
 #define F2FS_PROC_FILE_DEF(_name)					\
 static int _name##_open_fs(struct inode *inode, struct file *file)	\
 {									\
@@ -1565,17 +1283,6 @@ void f2fs_unregister_sysfs(struct f2fs_sb_info *sbi)
 		remove_proc_entry("segment_info", sbi->s_proc);
 		remove_proc_entry("segment_bits", sbi->s_proc);
 		remove_proc_entry("victim_bits", sbi->s_proc);
-		/* VENDOR_EDIT yanwu@TECH.Storage.FS.oF2FS
-		 * 2019/09/11, add f2fs frag_score and undiscard_score
-		 */
-		remove_proc_entry("gc_opt_enable", sbi->s_proc);
-		remove_proc_entry("undiscard_score", sbi->s_proc);
-		remove_proc_entry("frag_score", sbi->s_proc);
-		remove_proc_entry("free_frag", sbi->s_proc);
-		/* VENDOR_EDIT shifei.ge@TECH.Storage.FS
-		 * 2019-08-14, add for oDiscard
-		 */
-		remove_proc_entry("dc_enable", sbi->s_proc);
 		remove_proc_entry(sbi->sb->s_id, f2fs_proc_root);
 	}
 

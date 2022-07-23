@@ -45,12 +45,6 @@
 #define DATE_STR_LEN 128
 #define IOM_REASON_LENGTH 32
 
-#ifdef CONFIG_IOMONITOR_WITH_F2FS
-extern block_t of2fs_seg_freefrag(struct f2fs_sb_info *sbi,
-				  unsigned int segno, block_t *blocks,
-				  unsigned int n);
-#endif
-
 extern unsigned dump_log(char *buf, unsigned len);
 
 static LIST_HEAD(daily_list);
@@ -562,72 +556,6 @@ static void __dump_disk_info(struct inter_disk_data *disk_data)
 	return;
 }
 
-static void __get_disk_info(struct super_block *sb, void *arg)
-{
-	unsigned int i;
-	bool valid_patition = false;
-	struct mount *mnt;
-	struct f2fs_sb_info *sbi;
-	unsigned int total_segs;
-	block_t total_blocks = 0;
-	struct inter_disk_data *disk_data = (struct inter_disk_data *)arg;
-
-	if (disk_data->len != -1)
-		return;
-
-	lock_mount_hash();
-	list_for_each_entry(mnt, &sb->s_mounts, mnt_instance) {
-		if (strstr(mnt->mnt_devname, "userdata")
-		    && strstr(mnt->mnt_mp->m_dentry->d_name.name, "data")) {
-			if (sb->s_magic == F2FS_SUPER_MAGIC) {
-				valid_patition = true;
-				break;
-			}
-		}
-	}
-	unlock_mount_hash();
-
-	if (valid_patition) {
-		sbi = F2FS_SB(sb);
-		total_segs = le32_to_cpu(sbi->raw_super->segment_count_main);
-		memset(&disk_status, 0, sizeof(struct disk_info));
-		for (i = 0; i < total_segs; i++) {
-			total_blocks += of2fs_seg_freefrag(sbi, i,
-					disk_status.blocks,
-					ARRAY_SIZE(disk_status.blocks));
-
-			cond_resched();
-		}
-		disk_status.score =
-		    total_blocks ? (disk_status.blocks[0] +
-			disk_status.blocks[1]) * 100ULL / total_blocks : 0;
-		disk_status.free = f2fs_get_free_disk(sbi);
-
-		__dump_disk_info(disk_data);
-
-	}
-
-	return;
-}
-
-static int get_disk_info(char **data)
-{
-	struct inter_disk_data disk_data;
-
-	disk_data.len = -1;
-	disk_data.buf = NULL;
-
-	iterate_supers(__get_disk_info, &disk_data);
-
-	*data = disk_data.buf;
-	return disk_data.len;
-}
-
-struct io_info_entry disk_info_entry = {
-	.name = "disk",
-	.type = STR_FREE_ENTRY_TYPE,
-	.get_value = get_disk_info,
-};
 #endif
 
 static int get_iowait_info(char **data)
@@ -1508,9 +1436,6 @@ static void add_daily_items(void)
 	add_daily_entry(&device_4k_rw_entry);
 	add_daily_entry(&device_512k_rw_entry);
 	add_daily_entry(&pgpg_status_entry);
-#ifdef CONFIG_IOMONITOR_WITH_F2FS
-	add_daily_entry(&disk_info_entry);
-#endif
 	add_daily_entry(&iowait_info_entry);
 }
 
