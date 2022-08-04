@@ -111,17 +111,6 @@
 #endif
 #endif /* OPLUS_FEATURE_HEALTHINFO */
 
-#ifdef OPLUS_FEATURE_UIFIRST
-// XieLiujie@BSP.KERNEL.PERFORMANCE, 2020/05/25, Add for UIFirst
-#define GLOBAL_SYSTEM_UID KUIDT_INIT(1000)
-#define GLOBAL_SYSTEM_GID KGIDT_INIT(1000)
-extern const struct file_operations proc_static_ux_operations;
-#ifdef CONFIG_CAMERA_OPT
-extern const struct file_operations proc_camera_opt_operations;
-#endif
-extern bool is_special_entry(struct dentry *dentry, const char* special_proc);
-#endif /* OPLUS_FEATURE_UIFIRST */
-
 /* NOTE:
  *	Implementing inode permission operations in /proc is almost
  *	certainly an error.  Permission checks need to happen during
@@ -2052,14 +2041,6 @@ int pid_revalidate(struct dentry *dentry, unsigned int flags)
 
 	if (task) {
 		task_dump_owner(task, inode->i_mode, &inode->i_uid, &inode->i_gid);
-
-#ifdef OPLUS_FEATURE_UIFIRST
-// XieLiujie@BSP.KERNEL.PERFORMANCE, 2020/05/25, Add for UIFirst
-		if (is_special_entry(dentry, "static_ux")) {
-			inode->i_uid = GLOBAL_SYSTEM_UID;
-			inode->i_gid = GLOBAL_SYSTEM_GID;
-		}
-#endif /* OPLUS_FEATURE_UIFIRST */
 		inode->i_mode &= ~(S_ISUID | S_ISGID);
 		security_task_to_inode(task, inode);
 		put_task_struct(task);
@@ -3862,13 +3843,6 @@ static const struct pid_entry tid_base_stuff[] = {
 #endif
 #ifdef CONFIG_CPU_FREQ_TIMES
 	ONE("time_in_state", 0444, proc_time_in_state_show),
-#endif
-#ifdef OPLUS_FEATURE_UIFIRST
-// XieLiujie@BSP.KERNEL.PERFORMANCE, 2020/05/25, Add for UIFirst
-	REG("static_ux", S_IRUGO | S_IWUGO, proc_static_ux_operations),
-#endif /* OPLUS_FEATURE_UIFIRST */
-#ifdef CONFIG_CAMERA_OPT
-        REG("camera_opt", S_IRUGO | S_IWUGO, proc_camera_opt_operations),
 #endif
 };
 

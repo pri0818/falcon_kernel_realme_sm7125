@@ -73,10 +73,6 @@ drop_nopreempt_cpus(struct cpumask *lowest_mask)
 	}
 }
 
-#ifdef OPLUS_FEATURE_UIFIRST
-// XieLiujie@BSP.KERNEL.PERFORMANCE, 2020/06/15, Add for UIFirst
-extern void drop_ux_task_cpus(struct task_struct *p, struct cpumask *lowest_mask);
-#endif /* OPLUS_FEATURE_UIFIRST */
 /**
  * cpupri_find - find the best (lowest-pri) CPU in the system
  * @cp: The cpupri context
@@ -98,10 +94,6 @@ int cpupri_find(struct cpupri *cp, struct task_struct *p,
 	int idx = 0;
 	int task_pri = convert_prio(p->prio);
 	bool drop_nopreempts = task_pri <= MAX_RT_PRIO;
-#ifdef OPLUS_FEATURE_UIFIRST
-// XieLiujie@BSP.KERNEL.PERFORMANCE, 2020/06/15, Add for UIFirst
-	bool drop_uxtasks = sysctl_uifirst_enabled;
-#endif /* OPLUS_FEATURE_UIFIRST */
 	BUG_ON(task_pri >= CPUPRI_NR_PRIORITIES);
 
 retry:
@@ -144,11 +136,7 @@ retry:
 				       cpu_isolated_mask);
 			if (drop_nopreempts)
 				drop_nopreempt_cpus(lowest_mask);
-#ifdef OPLUS_FEATURE_UIFIRST
-// XieLiujie@BSP.KERNEL.PERFORMANCE, 2020/06/15, Add for UIFirst
-			if (drop_uxtasks)
-				drop_ux_task_cpus(p, lowest_mask);
-#endif /* OPLUS_FEATURE_UIFIRST */
+				
 			/*
 			 * We have to ensure that we have at least one bit
 			 * still set in the array, since the map could have
@@ -171,13 +159,6 @@ retry:
 		drop_nopreempts = false;
 		goto retry;
 	}
-#ifdef OPLUS_FEATURE_UIFIRST
-// XieLiujie@BSP.KERNEL.PERFORMANCE, 2020/06/15, Add for UIFirst
-	if (drop_uxtasks) {
-		drop_uxtasks = false;
-		goto retry;
-	}
-#endif /* OPLUS_FEATURE_UIFIRST */
 
 	return 0;
 }
