@@ -1489,10 +1489,7 @@ task_may_not_preempt(struct task_struct *task, int cpu)
 		 (task_thread_info(task)->preempt_count
 			& (HARDIRQ_MASK | SOFTIRQ_MASK))));
 }
-#if defined (CONFIG_SCHED_WALT) && defined (OPLUS_FEATURE_UIFIRST)
-extern bool is_sf(struct task_struct *p);
-extern int sysctl_slide_boost_enabled;
-#endif
+
 static int
 select_task_rq_rt(struct task_struct *p, int cpu, int sd_flag, int flags,
 		  int sibling_count_hint)
@@ -1573,11 +1570,6 @@ select_task_rq_rt(struct task_struct *p, int cpu, int sd_flag, int flags,
 			cpu = target;
 	}
 	rcu_read_unlock();
-#if defined (CONFIG_SCHED_WALT) && defined (OPLUS_FEATURE_UIFIRST)
-	if (sysctl_slide_boost_enabled == 2 && is_sf(p) && cpu != -1) {
-		return cpu;
-	}
-#endif
 out:
 	return cpu;
 }
