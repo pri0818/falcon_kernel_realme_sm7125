@@ -24,13 +24,6 @@
 #include <soc/qcom/scm.h>
 #include <soc/qcom/secure_buffer.h>
 #include <linux/compat.h>
-#if defined(OPLUS_FEATURE_VIRTUAL_RESERVE_MEMORY) && defined(CONFIG_VIRTUAL_RESERVE_MEMORY)
-/*
- * record the gpu highest addr
- */
-#include <linux/resmap_account.h>
-#endif
-
 #include "kgsl.h"
 #include "kgsl_device.h"
 #include "kgsl_mmu.h"
@@ -1115,14 +1108,6 @@ static void setup_64bit_pagetable(struct kgsl_mmu *mmu,
 		pt->compat_va_end = mmu->secure_base;
 		pt->va_start = KGSL_IOMMU_VA_BASE64;
 		pt->va_end = KGSL_IOMMU_VA_END64;
-
-#if defined(OPLUS_FEATURE_VIRTUAL_RESERVE_MEMORY) && defined(CONFIG_VIRTUAL_RESERVE_MEMORY)
-		/*
-		 * record the high limit of gpu mmap_base, used for create
-		 * reserved area
-		 */
-		gpu_compat_high_limit_addr = pt->compat_va_end;
-#endif
 	}
 
 	if (pagetable->name != KGSL_MMU_GLOBAL_PT &&
