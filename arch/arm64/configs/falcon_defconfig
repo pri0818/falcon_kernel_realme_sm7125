@@ -1001,3 +1001,9 @@ CONFIG_NANDSWAP=y
 
 # Wlan
 CONFIG_QCA_CLD_WLAN=y
+
+###################
+# Falcon-X Addons #
+###################
+
+CONFIG_WIREGUARD=y
