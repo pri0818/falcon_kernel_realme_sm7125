@@ -210,11 +210,6 @@ static ssize_t pm_test_store(struct kobject *kobj, struct kobj_attribute *attr,
 		}
 
 	unlock_system_sleep();
-#ifdef OPLUS_FEATURE_POWERINFO_STANDBY_DEBUG
-//Nanwei.Deng@BSP.CHG.Basic 2018/05/03 modify for power debug
-	pr_info("%s buf:%s, pm_test_level:%d,level:%d\n", __func__, buf,
-		pm_test_level, level);
-#endif /* VENDOR_EDIT */
 
 	return error ? error : n;
 }

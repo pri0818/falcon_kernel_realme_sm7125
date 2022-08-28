@@ -331,11 +331,6 @@ MODULE_PARM_DESC(pm_test_delay,
 
 static int suspend_test(int level)
 {
-	#ifdef OPLUS_FEATURE_POWERINFO_STANDBY_DEBUG
-	//Nanwei.Deng@BSP.CHG.Basic 2018/05/03 modify for power debug
-	pr_info("%s pm_test_level:%d, level:%d\n", __func__,
-		pm_test_level, level);
-	#endif /* OPLUS_FEATURE_POWERINFO_STANDBY_DEBUG */
 	
 #ifdef CONFIG_PM_DEBUG
 	if (pm_test_level == level) {
