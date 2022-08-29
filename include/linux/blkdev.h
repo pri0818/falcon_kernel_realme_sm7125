@@ -783,30 +783,6 @@ static inline void queue_flag_clear(unsigned int flag, struct request_queue *q)
 	__clear_bit(flag, &q->queue_flags);
 }
 
-#ifdef OPLUS_FEATURE_HEALTHINFO
-// jiheng.xie@PSW.Tech.BSP.Performance, 2019/03/11
-// Add for ioqueue
-#ifdef CONFIG_OPPO_HEALTHINFO
-static inline void ohm_ioqueue_add_inflight(struct request_queue *q,
-					     struct request *rq)
-{
-	if (rq->cmd_flags & REQ_FG)
-		q->in_flight[BLK_RW_FG]++;
-	else
-		q->in_flight[BLK_RW_BG]++;
-}
-
-static inline void ohm_ioqueue_dec_inflight(struct request_queue *q,
-					     struct request *rq)
-{
-	if (rq->cmd_flags & REQ_FG)
-		q->in_flight[BLK_RW_FG]--;
-	else
-		q->in_flight[BLK_RW_BG]--;
-}
-#endif
-#endif /* OPLUS_FEATURE_HEALTHINFO */
-
 #define blk_queue_tagged(q)	test_bit(QUEUE_FLAG_QUEUED, &(q)->queue_flags)
 #define blk_queue_stopped(q)	test_bit(QUEUE_FLAG_STOPPED, &(q)->queue_flags)
 #define blk_queue_dying(q)	test_bit(QUEUE_FLAG_DYING, &(q)->queue_flags)

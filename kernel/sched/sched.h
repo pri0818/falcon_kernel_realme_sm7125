@@ -967,10 +967,6 @@ struct rq {
 	struct cpuidle_state *idle_state;
 	int idle_state_idx;
 #endif
-#ifdef OPLUS_FEATURE_UIFIRST
-// XieLiujie@BSP.KERNEL.PERFORMANCE, 2020/05/25, Add for UIFirst
-	struct list_head ux_thread_list;
-#endif /* OPLUS_FEATURE_UIFIRST */
 };
 
 static inline int cpu_of(struct rq *rq)

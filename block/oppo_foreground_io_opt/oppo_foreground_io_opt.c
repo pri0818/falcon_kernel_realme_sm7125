@@ -83,7 +83,7 @@ void queue_throtl_add_request(struct request_queue *q,
 	if (unlikely(!sysctl_fg_io_opt))
 		return;
 
-	if (rq->cmd_flags & REQ_FG) {
+	if (rq->cmd_flags) {
 		head = &q->fg_head;
 		if (front)
 			list_add(&rq->fg_list, head);

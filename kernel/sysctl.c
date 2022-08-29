@@ -364,41 +364,10 @@ static int max_sched_tunable_scaling = SCHED_TUNABLESCALING_END-1;
 #endif /* CONFIG_SMP */
 #endif /* CONFIG_SCHED_DEBUG */
 
-#ifdef OPLUS_FEATURE_UIFIRST
-// XieLiujie@BSP.KERNEL.PERFORMANCE, 2020/05/25, Add for UIFirst
-int sysctl_uifirst_enabled = 1;
-int sysctl_launcher_boost_enabled = 0;
-#endif /* OPLUS_FEATURE_UIFIRST */
-
-#ifdef OPLUS_FEATURE_UIFIRST
-// Liujie.Xie@TECH.Kernel.Sched, 2020/02/26, add for heavy load task
-int sysctl_cpu_multi_thread = 0;
-#endif
-
 #ifdef CONFIG_COMPACTION
 static int min_extfrag_threshold;
 static int max_extfrag_threshold = 1000;
 #endif
-#ifdef OPLUS_FEATURE_UIFIRST
-// XuHaifeng@BSP.KERNEL.PERFORMANCE, 2020/06/23, Add for UIFirst(sldie boost)
-int sysctl_slide_boost_enabled = 0;
-int sysctl_boost_task_threshold = 51;
-#ifdef CONFIG_CAMERA_OPT
-int sysctl_camera_opt_enabled = 0;
-#endif
-int sysctl_frame_rate = 60;
-int sched_frame_rate_handler(struct ctl_table *table, int write, void __user *buffer, size_t *lenp, loff_t *ppos)
-{
-	int ret;
-
-	if (write && *ppos)
-		*ppos = 0;
-
-	ret = proc_dointvec(table, write, buffer, lenp, ppos);
-
-	return ret;
-}
-#endif /* OPLUS_FEATURE_UIFIRST */
 
 static struct ctl_table kern_table[] = {
 	{
@@ -1556,66 +1525,6 @@ static struct ctl_table kern_table[] = {
 		.proc_handler	= proc_dointvec,
 	},
 #endif
-#ifdef OPLUS_FEATURE_UIFIRST
-// XieLiujie@BSP.KERNEL.PERFORMANCE, 2020/05/25, Add for UIFirst
-	{
-		.procname	= "uifirst_enabled",
-		.data		= &sysctl_uifirst_enabled,
-		.maxlen		= sizeof(int),
-		.mode		= 0666,
-		.proc_handler	= proc_dointvec,
-	},
-	{
-		.procname	= "launcher_boost_enabled",
-		.data		= &sysctl_launcher_boost_enabled,
-		.maxlen		= sizeof(int),
-		.mode		= 0666,
-		.proc_handler = proc_dointvec,
-	},
-#endif /* OPLUS_FEATURE_UIFIRST */
-#ifdef OPLUS_FEATURE_UIFIRST
-	// Liujie.Xie@TECH.Kernel.Sched, 2020/02/26, add for heavy load task
-	{
-		.procname	= "cpu_multi_thread",
-		.data		= &sysctl_cpu_multi_thread,
-		.maxlen 	= sizeof(int),
-		.mode		= 0666,
-		.proc_handler = proc_dointvec,
-	},
-#endif /* OPLUS_FEATURE_UIFIRST */
-#ifdef OPLUS_FEATURE_UIFIRST
-// XuHaifeng@BSP.KERNEL.PERFORMANCE, 2020/06/23, Add for UIFirst(sldie boost)
-	{
-		.procname	= "slide_boost_enabled",
-		.data		= &sysctl_slide_boost_enabled,
-		.maxlen 	= sizeof(int),
-		.mode		= 0666,
-		.proc_handler = proc_dointvec,
-	},
-	{
-		.procname	= "boost_task_threshold",
-		.data		= &sysctl_boost_task_threshold,
-		.maxlen 	= sizeof(int),
-		.mode		= 0666,
-		.proc_handler = proc_dointvec,
-	},
-	{
-		.procname	= "frame_rate",
-		.data		= &sysctl_frame_rate,
-		.maxlen 	= sizeof(int),
-		.mode		= 0666,
-		.proc_handler = sched_frame_rate_handler,
-	},
-#ifdef CONFIG_CAMERA_OPT
-	{
-		.procname       = "camera_opt_enable",
-                .data           = &sysctl_camera_opt_enabled,
-                .maxlen         = sizeof(int),
-                .mode           = 0666,
-                .proc_handler = proc_dointvec,
-	},
-#endif
-#endif /* OPLUS_FEATURE_UIFIRST */
 	{ }
 };
 
