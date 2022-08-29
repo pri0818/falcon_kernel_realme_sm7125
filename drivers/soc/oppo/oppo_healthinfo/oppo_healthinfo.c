@@ -156,9 +156,6 @@ static inline void ohm_sched_stat_record_common(struct sched_stat_para *sched_st
         }
 }
 
-#ifdef OPLUS_FEATURE_UIFIRST
-extern bool test_task_ux(struct task_struct *task);
-#endif
 void ohm_schedstats_record(int sched_type, struct task_struct *task, u64 delta_ms)
 {
     struct sched_stat_para *sched_stat = &oppo_sched_para[sched_type];
@@ -182,11 +179,6 @@ void ohm_schedstats_record(int sched_type, struct task_struct *task, u64 delta_m
                 ohm_action_trig(sched_type);
         }
     }
-#ifdef OPLUS_FEATURE_UIFIRST
-	if (test_task_ux(task)){
-        ohm_sched_stat_record_common(sched_stat, &sched_stat->ux, delta_ms);
-    }
-#endif
     return;
 }
 
