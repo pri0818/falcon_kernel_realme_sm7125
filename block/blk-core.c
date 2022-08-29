@@ -1910,12 +1910,6 @@ void blk_init_request_from_bio(struct request *req, struct bio *bio)
 
 	if (bio->bi_opf & REQ_RAHEAD)
 		req->cmd_flags |= REQ_FAILFAST_MASK;
-#if defined(OPLUS_FEATURE_FG_IO_OPT) && defined(CONFIG_OPPO_FG_IO_OPT)
-/*Huacai.Zhou@Tech.Kernel.MM, 2020-03-23,add foreground io opt*/
-	if (bio->bi_opf & REQ_FG)
-		req->cmd_flags |= REQ_FG;
-#endif /*OPLUS_FEATURE_FG_IO_OPT*/
-
 	req->__sector = bio->bi_iter.bi_sector;
 	if (ioprio_valid(bio_prio(bio)))
 		req->ioprio = bio_prio(bio);
@@ -2473,12 +2467,6 @@ blk_qc_t submit_bio(struct bio *bio)
 	 */
 	if (workingset_read)
 		psi_memstall_enter(&pflags);
-#if defined(OPLUS_FEATURE_FG_IO_OPT) && defined(CONFIG_OPPO_FG_IO_OPT)
-/*Huacai.Zhou@Tech.Kernel.MM, 2020-03-23,add foreground io opt*/
-	if (high_prio_for_task(current))
-		bio->bi_opf |= REQ_FG;
-#endif /*OPLUS_FEATURE_FG_IO_OPT*/
-
 	ret = generic_make_request(bio);
 
 	if (workingset_read)
@@ -2858,13 +2846,6 @@ static void blk_dequeue_request(struct request *rq)
 	if (blk_account_rq(rq)) {
 		q->in_flight[rq_is_sync(rq)]++;
 		set_io_start_time_ns(rq);
-#ifdef OPLUS_FEATURE_HEALTHINFO
-// jiheng.xie@PSW.Tech.BSP.Performance, 2019/03/11
-// Add for ioqueue
-#ifdef CONFIG_OPPO_HEALTHINFO
-		ohm_ioqueue_add_inflight(q, rq);
-#endif
-#endif /* OPLUS_FEATURE_HEALTHINFO */
 	}
 }
 

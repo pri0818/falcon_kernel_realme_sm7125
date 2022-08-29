@@ -8,5 +8,3 @@ obj-$(CONFIG_ION) +=	ion.o ion_heap.o \
 #Huacai.Zhou@PSW.BSP.kernel.Peformance, 2018/06/18, add foreground process opt support
 obj-y	+= oppo_ion/
 #endif /* OPLUS_FEATURE_HEALTHINFO */
-
-obj-$(CONFIG_OPLUS_ION_BOOSTPOOL) += oplus_ion_boost_pool.o
