@@ -40,6 +40,4 @@ source "drivers/soc/oplus/oppo_healthinfo/Kconfig"
 source "drivers/soc/oplus/sensor/Kconfig"
 #endif /* OPLUS_FEATURE_SENSOR_SMEM */
 
-#Add for NandSwap
-source "drivers/soc/oplus/oplus_nandswap/Kconfig"
 endmenu
