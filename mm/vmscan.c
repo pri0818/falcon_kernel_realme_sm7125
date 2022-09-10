@@ -1477,43 +1477,6 @@ unsigned long reclaim_clean_pages_from_list(struct zone *zone,
 	return nr_reclaimed;
 }
 
-#if defined(CONFIG_NANDSWAP)
-unsigned long nswap_reclaim_page_list(struct list_head *page_list,
-					struct vm_area_struct *vma, bool scan)
-{
-	unsigned long nr_reclaimed;
-	unsigned long nr_scan = 0;
-	struct page *page;
-	struct scan_control sc = {
-		.gfp_mask = GFP_KERNEL,
-		.priority = DEF_PRIORITY,
-		.may_writepage = 1,
-		.may_unmap = 1,
-		.may_swap = 1,
-		.target_vma = vma,
-	};
-
-	list_for_each_entry(page, page_list, lru) {
-		ClearPageActive(page);
-	}
-
-	nr_reclaimed = shrink_page_list(page_list, NULL, &sc,
-			TTU_IGNORE_ACCESS, NULL, true);
-
-	while (!list_empty(page_list)) {
-		page = lru_to_page(page_list);
-		if (PageSwapCache(page) && !PageDirty(page))
-			nr_scan++;
-		list_del(&page->lru);
-		dec_node_page_state(page, NR_ISOLATED_ANON +
-				page_is_file_cache(page));
-		putback_lru_page(page);
-	}
-
-	return scan ? nr_scan : nr_reclaimed;
-}
-#endif
-
 #ifdef CONFIG_PROCESS_RECLAIM
 #if defined(OPLUS_FEATURE_PROCESS_RECLAIM) && defined(CONFIG_PROCESS_RECLAIM_ENHANCE)
 unsigned long reclaim_pages_from_list(struct list_head *page_list,
