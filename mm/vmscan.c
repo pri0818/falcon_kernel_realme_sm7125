@@ -69,9 +69,6 @@
 #define CREATE_TRACE_POINTS
 #include <trace/events/vmscan.h>
 
-#if defined(OPLUS_FEATURE_ZRAM_OPT) && defined(CONFIG_FG_TASK_UID)
-#include <linux/oppo_healthinfo/oppo_fg.h>
-#endif /*OPLUS_FEATURE_ZRAM_OPT*/
 #if defined(OPLUS_FEATURE_MULTI_KSWAPD) && defined(CONFIG_OPLUS_MULTI_KSWAPD)
 #include <linux/multi_kswapd.h>
 #endif /*OPLUS_FEATURE_MULTI_KSWAPD*/
