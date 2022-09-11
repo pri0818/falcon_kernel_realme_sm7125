@@ -1036,10 +1036,6 @@ const struct file_operations proc_tid_smaps_operations = {
 	.release	= proc_map_release,
 };
 
-#if defined(OPLUS_FEATURE_VIRTUAL_RESERVE_MEMORY) && defined(CONFIG_VIRTUAL_RESERVE_MEMORY)
-#include "reserve_mmap.c"
-#endif
-
 enum clear_refs_types {
 	CLEAR_REFS_ALL = 1,
 	CLEAR_REFS_ANON,
