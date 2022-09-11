@@ -43,6 +43,3 @@ msm_adreno-objs = $(msm_adreno-y)
 
 obj-$(CONFIG_QCOM_KGSL) += msm_kgsl_core.o
 obj-$(CONFIG_QCOM_KGSL) += msm_adreno.o
-#if defined(OPLUS_FEATURE_VIRTUAL_RESERVE_MEMORY) && defined(CONFIG_VIRTUAL_RESERVE_MEMORY)
-obj-$(CONFIG_VIRTUAL_RESERVE_MEMORY) += kgsl_reserved_area.o
-#endif /*defined(OPLUS_FEATURE_VIRTUAL_RESERVE_MEMORY) && defined(CONFIG_VIRTUAL_RESERVE_MEMORY)*/

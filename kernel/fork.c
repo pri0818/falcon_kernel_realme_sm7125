@@ -119,10 +119,6 @@
  */
 #define MIN_THREADS 20
 
-#if defined(OPLUS_FEATURE_VIRTUAL_RESERVE_MEMORY) && defined(CONFIG_VIRTUAL_RESERVE_MEMORY)
-#include <linux/resmap_account.h>
-#endif
-
 /*
  * Maximum number of threads
  */
@@ -854,9 +850,6 @@ static struct mm_struct *mm_init(struct mm_struct *mm, struct task_struct *p,
 	mm->mmap = NULL;
 	mm->mm_rb = RB_ROOT;
 	mm->vmacache_seqnum = 0;
-#if defined(OPLUS_FEATURE_VIRTUAL_RESERVE_MEMORY) && defined(CONFIG_VIRTUAL_RESERVE_MEMORY)
-	init_reserve_mm(mm);
-#endif
 #ifdef CONFIG_SPECULATIVE_PAGE_FAULT
 	rwlock_init(&mm->mm_rb_lock);
 #endif

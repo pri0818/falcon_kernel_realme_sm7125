@@ -875,14 +875,6 @@ config PHYSICAL_ANTI_FRAGMENTATION
 	 Turn on the function of Physical memory anti-fragmentation.
 #endif /* OPLUS_FEATURE_MULTI_FREEAREA */
 
-#ifdef OPLUS_FEATURE_VIRTUAL_RESERVE_MEMORY
-config VIRTUAL_RESERVE_MEMORY
-	bool "reserved vma for gpu emergency mmap"
-	default y
-	help
-	 support reserved vma for gpu emergency mmap.
-#endif /* OPLUS_FEATURE_VIRTUAL_RESERVE_MEMORY */
-
 config OPLUS_MM_HACKS
 	bool "Enable oplus memory management hacks"
 	default n
