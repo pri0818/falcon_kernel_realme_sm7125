@@ -858,10 +858,6 @@ extern int __weak create_kmalloc_debug(struct proc_dir_entry *parent);
 #ifdef CONFIG_VMALLOC_DEBUG
 extern int __weak create_vmalloc_debug(struct proc_dir_entry *parent);
 #endif
-#if defined(OPLUS_FEATURE_MULTI_KSWAPD) && defined(CONFIG_OPPO_MULTI_KSWAPD)
-/* multi kswapd support create proc fs file node */
-extern int create_kswapd_threads_proc(struct proc_dir_entry *parent);
-#endif
 #ifdef CONFIG_VIRTUAL_RESERVE_MEMORY
 extern int create_reserved_area_enable_proc(struct proc_dir_entry *parent);
 #endif
@@ -1001,12 +997,6 @@ static int __init oppo_healthinfo_init(void)
 		goto ERROR_INIT_VERSION;
 #endif
 
-#if defined(OPLUS_FEATURE_MULTI_KSWAPD) && defined(CONFIG_OPPO_MULTI_KSWAPD)
-	/* create the kswapd_threads file node */
-	ret = create_kswapd_threads_proc(oppo_healthinfo);
-	if (ret)
-		goto ERROR_INIT_VERSION;
-#endif
 #ifdef CONFIG_VIRTUAL_RESERVE_MEMORY
 	/* create vm_featurre file node */
 	ret = create_reserved_area_enable_proc(oppo_healthinfo);
