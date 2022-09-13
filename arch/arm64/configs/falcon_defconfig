@@ -1972,11 +1972,6 @@ CONFIG_IOMONITOR=y
 CONFIG_IOMONITOR_WITH_F2FS=y
 #endif /*OPLUS_FEATURE_IOMONITOR*/
 
-#ifdef OPLUS_FEATURE_LOWMEM_DBG
-#Hailong.Liu@BSP.Kernel.MM, 2020/06/19, Add for dump memory usage when lowmmem occurs.
-CONFIG_OPLUS_FEATURE_LOWMEM_DBG=y
-#endif /* OPLUS_FEATURE_LOWMEM_DBG */
-
 #ifdef OPLUS_FEATURE_HANS_FREEZE
 #Kun.Zhou@ROM.Framework, 2019/09/23, add for hans freeze manager
 CONFIG_OPPO_HANS=y
