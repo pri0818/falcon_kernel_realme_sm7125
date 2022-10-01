@@ -22,9 +22,6 @@
 #include <linux/blkdev.h>
 #include <linux/ktime.h>
 #include <linux/seq_file.h>
-#ifdef CONFIG_PROCESS_RECLAIM_ENHANCE
-#include <linux/process_mm_reclaim.h>
-#endif
 
 #define BUFFER_SIZE_S 256
 #define BUFFER_SIZE_M 512
@@ -952,11 +949,6 @@ static int __init oppo_healthinfo_init(void)
 		goto ERROR_INIT_VERSION;
 	}
 #endif
-#endif
-#ifdef CONFIG_PROCESS_RECLAIM_ENHANCE
-	ret = create_process_reclaim_enable_proc(oppo_healthinfo);
-	if (ret)
-		goto ERROR_INIT_VERSION;
 #endif
 
 /****** thresh update ******/
