@@ -13,7 +13,7 @@ KERNEL_DEFCONFIG=falcon_defconfig
 
 DEVICE=reatoll
 
-VERSION=v1.0-srb1
+VERSION=srb4-v2.0
 
 DATE=$(TZ=Asia/Kolkata date +"%Y%m%d-%T")
 
@@ -67,7 +67,7 @@ make O=out clean
 
 echo "**** Kernel defconfig is set to $KERNEL_DEFCONFIG ****"
 echo -e "$blue***********************************************"
-echo "          BUILDING DRAGONSOUL KERNEL          "
+echo "          BUILDING Falcon-X KERNEL          "
 echo -e "***********************************************$nocol"
 make $KERNEL_DEFCONFIG O=out
 make -j$(nproc --all) O=out \
