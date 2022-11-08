@@ -13,7 +13,7 @@ KERNEL_DEFCONFIG=falcon_defconfig
 
 DEVICE=reatoll
 
-VERSION=srb5-v2.0
+VERSION=End-Of-Life
 
 DATE=$(TZ=Asia/Kolkata date +"%Y%m%d-%T")
 
