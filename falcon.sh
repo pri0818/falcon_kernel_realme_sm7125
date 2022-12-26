@@ -25,18 +25,21 @@ FINAL_KERNEL_ZIP=Falcon-X-${VERSION}-${DEVICE}-${TANGGAL}.zip
 
 # Verbose Build
 VERBOSE=0
+
+# LD
+LINKER=ld.lld
 ##----------------------------------------------------------##
 
 # Exports
 
-export PATH="$HOME/proton/bin:$PATH"
+export PATH="$HOME/proton-16/bin:$PATH"
 export ARCH=arm64
 export SUBARCH=arm64
-export KBUILD_COMPILER_STRING="$($HOME/proton/bin/clang --version | head -n 1 | perl -pe 's/\(http.*?\)//gs' | sed -e 's/  */ /g' -e 's/[[:space:]]*$//')"
+export KBUILD_COMPILER_STRING="$($HOME/proton-16/bin/clang --version | head -n 1 | perl -pe 's/\(http.*?\)//gs' | sed -e 's/  */ /g' -e 's/[[:space:]]*$//')"
 
-if ! [ -d "$HOME/proton" ]; then
-echo "Proton clang not found! Cloning..."
-if ! git clone -q https://github.com/kdrag0n/proton-clang --depth=1 --single-branch ~/proton; then
+if ! [ -d "$HOME/proton-16" ]; then
+echo "Proton-16 clang not found! Cloning..."
+if ! git clone -q https://gitlab.com/LeCmnGend/proton-clang.git -b clang-16 --depth=1 --single-branch ~/proton-16; then
 echo "Cloning failed! Aborting..."
 exit 1
 fi
@@ -75,11 +78,15 @@ make -j$(nproc --all) O=out \
                       CC=clang \
                       CROSS_COMPILE=aarch64-linux-gnu- \
                       CROSS_COMPILE_ARM32=arm-linux-gnueabi- \
-                      NM=llvm-nm \
-                      OBJCOPY=llvm-objcopy \
-                      OBJDUMP=llvm-objdump \
-                      STRIP=llvm-strip \
-			          V=$VERBOSE 2>&1 | tee error.log                      
+                      LD=${LINKER} \
+	                  AR=llvm-ar \
+	                  NM=llvm-nm \
+	                  OBJCOPY=llvm-objcopy \
+	                  OBJDUMP=llvm-objdump \
+  	                  STRIP=llvm-strip \
+	                  READELF=llvm-readelf \
+	                  OBJSIZE=llvm-size \
+	                  V=$VERBOSE 2>&1 | tee error.log                           
 
 ##----------------------------------------------------------##
 
