@@ -304,6 +304,7 @@ static int help(struct sk_buff *skb, unsigned int protoff,
 			goto out;
 		}
 
+
 		/* strlen("NICK :xxxxxx")
 		 * 6+strlen("xxxxxx")=1 (minimum length of nickname)
 		 * Parsing the server reply to get nickname
@@ -558,4 +559,4 @@ static void nf_conntrack_irc_fini(void)
 }
 
 module_init(nf_conntrack_irc_init);
-module_exit(nf_conntrack_irc_fini);	 
+module_exit(nf_conntrack_irc_fini);
