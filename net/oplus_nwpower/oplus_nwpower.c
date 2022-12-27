@@ -616,7 +616,7 @@ static void oplus_print_ipa_wakeup(bool unsl)
 	}
 }
 
-static void oplus_reset_qrtr_wakeup()
+static void oplus_reset_qrtr_wakeup(void)
 {
 	int i;
 
@@ -636,7 +636,7 @@ static void oplus_reset_qrtr_wakeup()
 	nw_pcie2_wakeup_times = 0;
 }
 
-static void oplus_reset_ipa_wakeup()
+static void oplus_reset_ipa_wakeup(void)
 {
 	int i;
 	int j;

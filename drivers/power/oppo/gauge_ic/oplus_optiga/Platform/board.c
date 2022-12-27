@@ -28,7 +28,7 @@ void timing_init(void)
 	g_culNvmTimeout 			= 10000;	//5.1ms
 }
 
-uint8_t get_pin()
+uint8_t get_pin(void)
 {
 	return get_optiga_pin();
 }

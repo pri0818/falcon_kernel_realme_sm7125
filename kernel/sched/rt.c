@@ -1488,7 +1488,7 @@ task_may_not_preempt(struct task_struct *task, int cpu)
 }
 #if defined (CONFIG_SCHED_WALT) && defined (OPLUS_FEATURE_UIFIRST)
 extern bool is_sf(struct task_struct *p);
-extern sysctl_slide_boost_enabled;
+extern int sysctl_slide_boost_enabled;
 #endif
 static int
 select_task_rq_rt(struct task_struct *p, int cpu, int sd_flag, int flags,

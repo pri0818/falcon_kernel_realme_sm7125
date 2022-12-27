@@ -8336,7 +8336,7 @@ static const struct file_operations smartpa_id_proc_ops = {
 };
 
 /* chengong@ODM_LQ@Multimedia.Audio,2019/10/29,add for smartpa evt1 */
-static void odm_mi2s_be_dai_rename()
+static void odm_mi2s_be_dai_rename(void)
 {
 	int i = 0;
 

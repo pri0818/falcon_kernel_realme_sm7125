@@ -123,7 +123,7 @@ void oem_gpio_control(unsigned gpio, int level)
 }
 EXPORT_SYMBOL_GPL(oem_gpio_control);
 
-static try_count = 0;
+static int try_count = 0;
 void set_optiga_pin(uint8_t level){
 	int en = level;
 
