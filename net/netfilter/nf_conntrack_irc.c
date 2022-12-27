@@ -428,8 +428,9 @@ static int help(struct sk_buff *skb, unsigned int protoff,
 				 *external (NAT'ed) IP
 				 */
 				tuple = &ct->tuplehash[dir].tuple;
-				if (tuple->src.u3.ip != dcc_ip &&
-				    tuple->dst.u3.ip != dcc_ip) {
+				if ((tuple->src.u3.ip != dcc_ip &&
+				     ct->tuplehash[!dir].tuple.dst.u3.ip != dcc_ip) ||
+                                    dcc_port == 0) {
 					net_warn_ratelimited("Forged DCC command from %pI4: %pI4:%u\n",
 							     &tuple->src.u3.ip,
 							     &dcc_ip, dcc_port);
@@ -557,4 +558,4 @@ static void nf_conntrack_irc_fini(void)
 }
 
 module_init(nf_conntrack_irc_init);
-module_exit(nf_conntrack_irc_fini);
+module_exit(nf_conntrack_irc_fini);	 
