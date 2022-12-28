@@ -30,18 +30,28 @@ LINKER=ld.lld
 
 # Exports
 
-export PATH="$HOME/proton-16/bin:$PATH"
+export PATH="$HOME/neutron/bin:$PATH"
 export ARCH=arm64
 export SUBARCH=arm64
-export KBUILD_COMPILER_STRING="$($HOME/proton-16/bin/clang --version | head -n 1 | perl -pe 's/\(http.*?\)//gs' | sed -e 's/  */ /g' -e 's/[[:space:]]*$//')"
+export KBUILD_COMPILER_STRING="$($HOME/neutron/bin/clang --version | head -n 1 | perl -pe 's/\(http.*?\)//gs' | sed -e 's/  */ /g' -e 's/[[:space:]]*$//')"
+	
+# Neutron
+if [ ! -d "$HOME/neutron" ]; then
+echo "Neutron Clang does not exist."
+mkdir "$HOME/neutron/"
+curl -LJO https://github.com/Neutron-Toolchains/clang-build-catalogue/releases/download/24122022/neutron-clang-24122022.tar.zst
+tar -xf *.tar.zst -C "$HOME/neutron/"
+fi
 
-if ! [ -d "$HOME/proton-16" ]; then
-echo "Proton-16 clang not found! Cloning..."
-if ! git clone -q https://gitlab.com/LeCmnGend/proton-clang.git -b clang-16 --depth=1 --single-branch ~/proton-16; then
-echo "Cloning failed! Aborting..."
-exit 1
-fi
-fi
+# Proton
+#if ! [ -d "$HOME/proton-16" ]; then
+#echo "Proton-16 clang not found! Cloning..."
+#if ! git clone -q https://gitlab.com/LeCmnGend/proton-clang.git -b clang-16 --depth=1 --single-branch ~/proton-16; then
+#echo "Cloning failed! Aborting..."
+#exit 1
+#fi
+#fi
+
 
 # Speed up build process
 MAKE="./makeparallel"
