@@ -1738,7 +1738,7 @@ static int zram_recompress(struct zram *zram, u32 index, struct page *page,
 	void *src, *dst;
 	int ret;
 
-	handle_old = zram_get_handle(zram, index);
+	handle_old = zram_entry_handle(zram, zram_get_entry(zram, index));
 	if (!handle_old)
 		return -EINVAL;
 
@@ -1846,7 +1846,7 @@ static int zram_recompress(struct zram *zram, u32 index, struct page *page,
 	zs_unmap_object(zram->mem_pool, handle_new);
 
 	zram_free_page(zram, index);
-	zram_set_handle(zram, index, handle_new);
+	zram->table[index].entry->handle = handle_new;
 	zram_set_obj_size(zram, index, comp_len_new);
 	zram_set_priority(zram, index, prio);
 
